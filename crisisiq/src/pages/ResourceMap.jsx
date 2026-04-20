@@ -22,6 +22,7 @@ import {
   GOOGLE_MAPS_ID,
   heatmapIntensities
 } from '../config/googleMaps';
+import { useTheme } from '../context/ThemeContext';
 import './ResourceMap.css';
 
 // ── Generate weighted heatmap points using exact intensities ──
@@ -45,6 +46,7 @@ const getHeatmapPoints = () => {
 };
 
 function ResourceMap() {
+  const { isDark } = useTheme();
   const [selectedZone, setSelectedZone] = useState(null);
   const [directionsResponse, setDirectionsResponse] = useState(null);
   const [activeType, setActiveType] = useState('All');
@@ -147,14 +149,14 @@ function ResourceMap() {
         zoom={8}
         onLoad={onMapLoad}
         options={{
-          styles: darkMapStyle,
+          styles: isDark ? darkMapStyle : [],
           mapTypeId: 'roadmap',
           disableDefaultUI: true,
           zoomControl: true,
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: true,
-          backgroundColor: '#050A14',
+          backgroundColor: isDark ? '#050A14' : '#F0F4F8',
         }}
         onClick={() => setSelectedZone(null)}
       >

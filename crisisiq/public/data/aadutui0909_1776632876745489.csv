@@ -1,0 +1,421 @@
+Country,Year,States Or Uts Or Other,Type Of Residence ,"Number Of Persons Below Poverty Line (UOM:Number), Scaling Factor:1000","Percentage Of The Persons Below The Poverty Line (UOM:%(Percentage)), Scaling Factor:1","Poverty Line (UOM:INR(IndianRupees)), Scaling Factor:1"
+India,"Financial Year (Apr - Mar), 2011",All India,Rural,216658,25.7,816
+India,"Financial Year (Apr - Mar), 2011",All India,Urban,53125,13.7,1000
+India,"Financial Year (Apr - Mar), 2011",All India,Combined,269783,21.92,
+India,"Financial Year (Apr - Mar), 2011",Andaman & Nicobar Islands,Rural,4,1.57,
+India,"Financial Year (Apr - Mar), 2011",Andaman & Nicobar Islands,Urban,,,
+India,"Financial Year (Apr - Mar), 2011",Andaman & Nicobar Islands,Combined,4,1,
+India,"Financial Year (Apr - Mar), 2011",Andhra Pradesh,Rural,6180,10.96,860
+India,"Financial Year (Apr - Mar), 2011",Andhra Pradesh,Urban,1698,5.81,1009
+India,"Financial Year (Apr - Mar), 2011",Andhra Pradesh,Combined,7878,9.2,
+India,"Financial Year (Apr - Mar), 2011",Arunachal Pradesh,Rural,425,38.93,930
+India,"Financial Year (Apr - Mar), 2011",Arunachal Pradesh,Urban,66,20.33,1060
+India,"Financial Year (Apr - Mar), 2011",Arunachal Pradesh,Combined,491,34.67,
+India,"Financial Year (Apr - Mar), 2011",Assam,Rural,9206,33.89,828
+India,"Financial Year (Apr - Mar), 2011",Assam,Urban,921,20.49,1008
+India,"Financial Year (Apr - Mar), 2011",Assam,Combined,10127,31.98,
+India,"Financial Year (Apr - Mar), 2011",Bihar,Rural,32040,34.06,778
+India,"Financial Year (Apr - Mar), 2011",Bihar,Urban,3775,31.23,923
+India,"Financial Year (Apr - Mar), 2011",Bihar,Combined,35815,33.74,
+India,"Financial Year (Apr - Mar), 2011",Chandigarh,Rural,,1.64,
+India,"Financial Year (Apr - Mar), 2011",Chandigarh,Urban,234,22.31,
+India,"Financial Year (Apr - Mar), 2011",Chandigarh,Combined,235,21.81,
+India,"Financial Year (Apr - Mar), 2011",Chhattisgarh,Rural,8890,44.61,738
+India,"Financial Year (Apr - Mar), 2011",Chhattisgarh,Urban,1522,24.75,849
+India,"Financial Year (Apr - Mar), 2011",Chhattisgarh,Combined,10411,39.93,
+India,"Financial Year (Apr - Mar), 2011",Dadra & Nagar Haveli,Rural,115,62.59,
+India,"Financial Year (Apr - Mar), 2011",Dadra & Nagar Haveli,Urban,28,15.38,
+India,"Financial Year (Apr - Mar), 2011",Dadra & Nagar Haveli,Combined,143,39.31,
+India,"Financial Year (Apr - Mar), 2011",Daman & Diu,Rural,0,0,
+India,"Financial Year (Apr - Mar), 2011",Daman & Diu,Urban,26,12.62,
+India,"Financial Year (Apr - Mar), 2011",Daman & Diu,Combined,26,9.86,
+India,"Financial Year (Apr - Mar), 2011",Delhi,Rural,50,12.92,1145
+India,"Financial Year (Apr - Mar), 2011",Delhi,Urban,1646,9.84,1134
+India,"Financial Year (Apr - Mar), 2011",Delhi,Combined,1696,9.91,
+India,"Financial Year (Apr - Mar), 2011",Goa,Rural,37,6.81,1090
+India,"Financial Year (Apr - Mar), 2011",Goa,Urban,38,4.09,1134
+India,"Financial Year (Apr - Mar), 2011",Goa,Combined,75,5.09,
+India,"Financial Year (Apr - Mar), 2011",Gujarat,Rural,7535,21.54,932
+India,"Financial Year (Apr - Mar), 2011",Gujarat,Urban,2688,10.14,1152
+India,"Financial Year (Apr - Mar), 2011",Gujarat,Combined,10223,16.63,
+India,"Financial Year (Apr - Mar), 2011",Haryana,Rural,1942,11.64,1015
+India,"Financial Year (Apr - Mar), 2011",Haryana,Urban,941,10.28,1169
+India,"Financial Year (Apr - Mar), 2011",Haryana,Combined,2883,11.16,
+India,"Financial Year (Apr - Mar), 2011",Himachal Pradesh,Rural,529,8.48,913
+India,"Financial Year (Apr - Mar), 2011",Himachal Pradesh,Urban,30,4.33,1064
+India,"Financial Year (Apr - Mar), 2011",Himachal Pradesh,Combined,559,8.06,
+India,"Financial Year (Apr - Mar), 2011",Jammu & Kashmir,Rural,1073,11.54,891
+India,"Financial Year (Apr - Mar), 2011",Jammu & Kashmir,Urban,253,7.2,988
+India,"Financial Year (Apr - Mar), 2011",Jammu & Kashmir,Combined,1327,10.35,
+India,"Financial Year (Apr - Mar), 2011",Jharkhand,Rural,10409,40.84,748
+India,"Financial Year (Apr - Mar), 2011",Jharkhand,Urban,2024,24.83,974
+India,"Financial Year (Apr - Mar), 2011",Jharkhand,Combined,12433,36.96,
+India,"Financial Year (Apr - Mar), 2011",Karnataka,Rural,9280,24.53,902
+India,"Financial Year (Apr - Mar), 2011",Karnataka,Urban,3696,15.25,1089
+India,"Financial Year (Apr - Mar), 2011",Karnataka,Combined,12976,20.91,
+India,"Financial Year (Apr - Mar), 2011",Kerala,Rural,1548,9.14,1018
+India,"Financial Year (Apr - Mar), 2011",Kerala,Urban,846,4.97,987
+India,"Financial Year (Apr - Mar), 2011",Kerala,Combined,2395,7.05,
+India,"Financial Year (Apr - Mar), 2011",Lakshwadeep,Rural,0,0,
+India,"Financial Year (Apr - Mar), 2011",Lakshwadeep,Urban,2,3.44,
+India,"Financial Year (Apr - Mar), 2011",Lakshwadeep,Combined,2,2.77,
+India,"Financial Year (Apr - Mar), 2011",Madhya Pradesh,Rural,19095,35.74,771
+India,"Financial Year (Apr - Mar), 2011",Madhya Pradesh,Urban,4310,21,897
+India,"Financial Year (Apr - Mar), 2011",Madhya Pradesh,Combined,23406,31.65,
+India,"Financial Year (Apr - Mar), 2011",Maharashtra,Rural,15056,24.22,967
+India,"Financial Year (Apr - Mar), 2011",Maharashtra,Urban,4736,9.12,1126
+India,"Financial Year (Apr - Mar), 2011",Maharashtra,Combined,19792,17.35,
+India,"Financial Year (Apr - Mar), 2011",Manipur,Rural,745,38.8,1118
+India,"Financial Year (Apr - Mar), 2011",Manipur,Urban,278,32.59,1170
+India,"Financial Year (Apr - Mar), 2011",Manipur,Combined,1022,36.89,
+India,"Financial Year (Apr - Mar), 2011",Meghalaya,Rural,304,12.53,888
+India,"Financial Year (Apr - Mar), 2011",Meghalaya,Urban,57,9.26,1154
+India,"Financial Year (Apr - Mar), 2011",Meghalaya,Combined,361,11.87,
+India,"Financial Year (Apr - Mar), 2011",Mizoram,Rural,191,35.43,1066
+India,"Financial Year (Apr - Mar), 2011",Mizoram,Urban,37,6.36,1155
+India,"Financial Year (Apr - Mar), 2011",Mizoram,Combined,227,20.4,
+India,"Financial Year (Apr - Mar), 2011",Nagaland,Rural,276,19.93,1270
+India,"Financial Year (Apr - Mar), 2011",Nagaland,Urban,100,16.48,1302
+India,"Financial Year (Apr - Mar), 2011",Nagaland,Combined,376,18.88,
+India,"Financial Year (Apr - Mar), 2011",Odisha,Rural,12614,35.69,695
+India,"Financial Year (Apr - Mar), 2011",Odisha,Urban,1239,17.29,861
+India,"Financial Year (Apr - Mar), 2011",Odisha,Combined,13853,32.59,
+India,"Financial Year (Apr - Mar), 2011",Puducherry,Rural,69,17.06,1301
+India,"Financial Year (Apr - Mar), 2011",Puducherry,Urban,55,6.3,1309
+India,"Financial Year (Apr - Mar), 2011",Puducherry,Combined,124,9.69,
+India,"Financial Year (Apr - Mar), 2011",Punjab,Rural,1335,7.66,1054
+India,"Financial Year (Apr - Mar), 2011",Punjab,Urban,982,9.24,1155
+India,"Financial Year (Apr - Mar), 2011",Punjab,Combined,2318,8.26,
+India,"Financial Year (Apr - Mar), 2011",Rajasthan,Rural,8419,16.05,905
+India,"Financial Year (Apr - Mar), 2011",Rajasthan,Urban,1873,10.69,1002
+India,"Financial Year (Apr - Mar), 2011",Rajasthan,Combined,10292,14.71,
+India,"Financial Year (Apr - Mar), 2011",Sikkim,Rural,45,9.85,930
+India,"Financial Year (Apr - Mar), 2011",Sikkim,Urban,6,3.66,1226
+India,"Financial Year (Apr - Mar), 2011",Sikkim,Combined,51,8.19,
+India,"Financial Year (Apr - Mar), 2011",Tamil Nadu,Rural,5923,15.83,880
+India,"Financial Year (Apr - Mar), 2011",Tamil Nadu,Urban,2340,6.54,937
+India,"Financial Year (Apr - Mar), 2011",Tamil Nadu,Combined,8263,11.28,
+India,"Financial Year (Apr - Mar), 2011",Tripura,Rural,449,16.53,798
+India,"Financial Year (Apr - Mar), 2011",Tripura,Urban,75,7.42,920
+India,"Financial Year (Apr - Mar), 2011",Tripura,Combined,524,14.05,
+India,"Financial Year (Apr - Mar), 2011",Uttar Pradesh,Rural,47935,30.4,768
+India,"Financial Year (Apr - Mar), 2011",Uttar Pradesh,Urban,11884,26.06,941
+India,"Financial Year (Apr - Mar), 2011",Uttar Pradesh,Combined,59819,29.43,
+India,"Financial Year (Apr - Mar), 2011",Uttarakhand,Rural,825,11.62,880
+India,"Financial Year (Apr - Mar), 2011",Uttarakhand,Urban,335,10.48,1082
+India,"Financial Year (Apr - Mar), 2011",Uttarakhand,Combined,1160,11.26,
+India,"Financial Year (Apr - Mar), 2011",West Bengal,Rural,14114,22.52,783
+India,"Financial Year (Apr - Mar), 2011",West Bengal,Urban,4383,14.66,981
+India,"Financial Year (Apr - Mar), 2011",West Bengal,Combined,18498,19.98,
+India,"Financial Year (Apr - Mar), 2009",All India,Rural,278210,33.8,672.8
+India,"Financial Year (Apr - Mar), 2009",All India,Urban,76470,20.9,859.6
+India,"Financial Year (Apr - Mar), 2009",All India,Combined,354680,29.8,
+India,"Financial Year (Apr - Mar), 2009",Andaman & Nicobar Islands,Rural,,0.4,
+India,"Financial Year (Apr - Mar), 2009",Andaman & Nicobar Islands,Urban,,0.3,
+India,"Financial Year (Apr - Mar), 2009",Andaman & Nicobar Islands,Combined,,0.4,
+India,"Financial Year (Apr - Mar), 2009",Andhra Pradesh,Rural,12790,22.8,693.8
+India,"Financial Year (Apr - Mar), 2009",Andhra Pradesh,Urban,4870,17.7,926.4
+India,"Financial Year (Apr - Mar), 2009",Andhra Pradesh,Combined,17660,21.1,
+India,"Financial Year (Apr - Mar), 2009",Arunachal Pradesh,Rural,270,26.2,773.7
+India,"Financial Year (Apr - Mar), 2009",Arunachal Pradesh,Urban,80,24.9,925.2
+India,"Financial Year (Apr - Mar), 2009",Arunachal Pradesh,Combined,350,25.9,
+India,"Financial Year (Apr - Mar), 2009",Assam,Rural,10530,39.9,691.7
+India,"Financial Year (Apr - Mar), 2009",Assam,Urban,1120,26.1,871
+India,"Financial Year (Apr - Mar), 2009",Assam,Combined,11640,37.9,
+India,"Financial Year (Apr - Mar), 2009",Bihar,Rural,49870,55.3,655.6
+India,"Financial Year (Apr - Mar), 2009",Bihar,Urban,4480,39.4,775.3
+India,"Financial Year (Apr - Mar), 2009",Bihar,Combined,54350,53.5,
+India,"Financial Year (Apr - Mar), 2009",Chandigarh,Rural,,10.3,
+India,"Financial Year (Apr - Mar), 2009",Chandigarh,Urban,90,9.2,
+India,"Financial Year (Apr - Mar), 2009",Chandigarh,Combined,100,9.2,
+India,"Financial Year (Apr - Mar), 2009",Chhattisgarh,Rural,10830,56.1,617.3
+India,"Financial Year (Apr - Mar), 2009",Chhattisgarh,Urban,1360,23.8,806.7
+India,"Financial Year (Apr - Mar), 2009",Chhattisgarh,Combined,12190,48.7,
+India,"Financial Year (Apr - Mar), 2009",Dadra & Nagar Haveli,Rural,100,55.9,
+India,"Financial Year (Apr - Mar), 2009",Dadra & Nagar Haveli,Urban,30,17.7,
+India,"Financial Year (Apr - Mar), 2009",Dadra & Nagar Haveli,Combined,130,39.1,
+India,"Financial Year (Apr - Mar), 2009",Daman & Diu,Rural,20,34.2,
+India,"Financial Year (Apr - Mar), 2009",Daman & Diu,Urban,50,33,
+India,"Financial Year (Apr - Mar), 2009",Daman & Diu,Combined,80,33.3,
+India,"Financial Year (Apr - Mar), 2009",Delhi,Rural,3030,7.7,747.8
+India,"Financial Year (Apr - Mar), 2009",Delhi,Urban,2290,14.4,1040.3
+India,"Financial Year (Apr - Mar), 2009",Delhi,Combined,2330,14.2,
+India,"Financial Year (Apr - Mar), 2009",Goa,Rural,60,11.5,931
+India,"Financial Year (Apr - Mar), 2009",Goa,Urban,60,6.9,1025.4
+India,"Financial Year (Apr - Mar), 2009",Goa,Combined,130,8.7,
+India,"Financial Year (Apr - Mar), 2009",Gujarat,Rural,9160,26.7,725.9
+India,"Financial Year (Apr - Mar), 2009",Gujarat,Urban,4460,17.9,951.4
+India,"Financial Year (Apr - Mar), 2009",Gujarat,Combined,13620,23,
+India,"Financial Year (Apr - Mar), 2009",Haryana,Rural,3040,18.6,791.6
+India,"Financial Year (Apr - Mar), 2009",Haryana,Urban,1960,23,975.4
+India,"Financial Year (Apr - Mar), 2009",Haryana,Combined,5000,20.1,
+India,"Financial Year (Apr - Mar), 2009",Himachal Pradesh,Rural,560,9.1,708
+India,"Financial Year (Apr - Mar), 2009",Himachal Pradesh,Urban,90,12.6,888.3
+India,"Financial Year (Apr - Mar), 2009",Himachal Pradesh,Combined,640,9.5,
+India,"Financial Year (Apr - Mar), 2009",Jammu & Kashmir,Rural,730,8.1,722.9
+India,"Financial Year (Apr - Mar), 2009",Jammu & Kashmir,Urban,420,12.8,845.4
+India,"Financial Year (Apr - Mar), 2009",Jammu & Kashmir,Combined,1150,9.4,
+India,"Financial Year (Apr - Mar), 2009",Jharkhand,Rural,10220,41.6,616.3
+India,"Financial Year (Apr - Mar), 2009",Jharkhand,Urban,2400,31.1,831.2
+India,"Financial Year (Apr - Mar), 2009",Jharkhand,Combined,12620,39.1,
+India,"Financial Year (Apr - Mar), 2009",Karnataka,Rural,9740,26.1,629.4
+India,"Financial Year (Apr - Mar), 2009",Karnataka,Urban,4490,19.6,908
+India,"Financial Year (Apr - Mar), 2009",Karnataka,Combined,14230,23.6,
+India,"Financial Year (Apr - Mar), 2009",Kerala,Rural,2160,12,775.3
+India,"Financial Year (Apr - Mar), 2009",Kerala,Urban,1800,12.1,830.7
+India,"Financial Year (Apr - Mar), 2009",Kerala,Combined,3960,12,
+India,"Financial Year (Apr - Mar), 2009",Lakshwadeep,Rural,,22.2,
+India,"Financial Year (Apr - Mar), 2009",Lakshwadeep,Urban,,1.7,
+India,"Financial Year (Apr - Mar), 2009",Lakshwadeep,Combined,,6.8,
+India,"Financial Year (Apr - Mar), 2009",Madhya Pradesh,Rural,21690,42,631.9
+India,"Financial Year (Apr - Mar), 2009",Madhya Pradesh,Urban,4490,22.9,771.7
+India,"Financial Year (Apr - Mar), 2009",Madhya Pradesh,Combined,26180,36.7,
+India,"Financial Year (Apr - Mar), 2009",Maharashtra,Rural,17980,29.5,743.7
+India,"Financial Year (Apr - Mar), 2009",Maharashtra,Urban,9090,18.3,961.1
+India,"Financial Year (Apr - Mar), 2009",Maharashtra,Combined,27080,24.5,
+India,"Financial Year (Apr - Mar), 2009",Manipur,Rural,880,47.4,871
+India,"Financial Year (Apr - Mar), 2009",Manipur,Urban,370,46.4,955
+India,"Financial Year (Apr - Mar), 2009",Manipur,Combined,1250,47.1,
+India,"Financial Year (Apr - Mar), 2009",Meghalaya,Rural,350,15.3,686.9
+India,"Financial Year (Apr - Mar), 2009",Meghalaya,Urban,140,24.1,989.8
+India,"Financial Year (Apr - Mar), 2009",Meghalaya,Combined,490,17.1,
+India,"Financial Year (Apr - Mar), 2009",Mizoram,Rural,160,31.1,850
+India,"Financial Year (Apr - Mar), 2009",Mizoram,Urban,6060,11.5,939.3
+India,"Financial Year (Apr - Mar), 2009",Mizoram,Combined,230,21.1,
+India,"Financial Year (Apr - Mar), 2009",Nagaland,Rural,280,19.3,1016.8
+India,"Financial Year (Apr - Mar), 2009",Nagaland,Urban,140,25,1147.6
+India,"Financial Year (Apr - Mar), 2009",Nagaland,Combined,410,20.9,
+India,"Financial Year (Apr - Mar), 2009",Odisha,Rural,13550,39.2,567.1
+India,"Financial Year (Apr - Mar), 2009",Odisha,Urban,1770,25.9,736
+India,"Financial Year (Apr - Mar), 2009",Odisha,Combined,15320,37,
+India,"Financial Year (Apr - Mar), 2009",Puducherry,Rural,,0.2,641
+India,"Financial Year (Apr - Mar), 2009",Puducherry,Urban,10,1.6,777.7
+India,"Financial Year (Apr - Mar), 2009",Puducherry,Combined,10,1.2,
+India,"Financial Year (Apr - Mar), 2009",Punjab,Rural,2510,14.6,830
+India,"Financial Year (Apr - Mar), 2009",Punjab,Urban,1840,18.1,960.8
+India,"Financial Year (Apr - Mar), 2009",Punjab,Combined,4350,15.9,
+India,"Financial Year (Apr - Mar), 2009",Rajasthan,Rural,13380,26.4,755
+India,"Financial Year (Apr - Mar), 2009",Rajasthan,Urban,3320,19.9,846
+India,"Financial Year (Apr - Mar), 2009",Rajasthan,Combined,16700,24.8,
+India,"Financial Year (Apr - Mar), 2009",Sikkim,Rural,70,15.5,728.9
+India,"Financial Year (Apr - Mar), 2009",Sikkim,Urban,10,5,1035.2
+India,"Financial Year (Apr - Mar), 2009",Sikkim,Combined,80,13.1,
+India,"Financial Year (Apr - Mar), 2009",Tamil Nadu,Rural,7830,21.2,639
+India,"Financial Year (Apr - Mar), 2009",Tamil Nadu,Urban,4350,12.8,800.8
+India,"Financial Year (Apr - Mar), 2009",Tamil Nadu,Combined,12180,17.1,
+India,"Financial Year (Apr - Mar), 2009",Tripura,Rural,540,19.8,663.4
+India,"Financial Year (Apr - Mar), 2009",Tripura,Urban,90,10,782.7
+India,"Financial Year (Apr - Mar), 2009",Tripura,Combined,630,17.4,
+India,"Financial Year (Apr - Mar), 2009",Uttar Pradesh,Rural,60060,39.4,663.7
+India,"Financial Year (Apr - Mar), 2009",Uttar Pradesh,Urban,13730,31.7,799.9
+India,"Financial Year (Apr - Mar), 2009",Uttar Pradesh,Combined,73790,37.7,
+India,"Financial Year (Apr - Mar), 2009",Uttarakhand,Rural,1030,14.9,719.5
+India,"Financial Year (Apr - Mar), 2009",Uttarakhand,Urban,750,25.2,898.6
+India,"Financial Year (Apr - Mar), 2009",Uttarakhand,Combined,1790,18,
+India,"Financial Year (Apr - Mar), 2009",West Bengal,Rural,17780,28.8,643.2
+India,"Financial Year (Apr - Mar), 2009",West Bengal,Urban,6250,22,830.6
+India,"Financial Year (Apr - Mar), 2009",West Bengal,Combined,24030,26.7,
+India,"Financial Year (Apr - Mar), 2004",All India,Rural,325810,42,446.68
+India,"Financial Year (Apr - Mar), 2004",All India,Urban,81410,25.5,578.8
+India,"Financial Year (Apr - Mar), 2004",All India,Combined,407220,37.2,
+India,"Financial Year (Apr - Mar), 2004",Andaman & Nicobar Islands,Rural,10,4.1,
+India,"Financial Year (Apr - Mar), 2004",Andaman & Nicobar Islands,Urban,,0.8,
+India,"Financial Year (Apr - Mar), 2004",Andaman & Nicobar Islands,Combined,10,3,
+India,"Financial Year (Apr - Mar), 2004",Andhra Pradesh,Rural,18000,32.3,433.43
+India,"Financial Year (Apr - Mar), 2004",Andhra Pradesh,Urban,5500,23.4,563.16
+India,"Financial Year (Apr - Mar), 2004",Andhra Pradesh,Combined,23510,29.6,
+India,"Financial Year (Apr - Mar), 2004",Arunachal Pradesh,Rural,320,33.6,547.14
+India,"Financial Year (Apr - Mar), 2004",Arunachal Pradesh,Urban,60,23.5,618.45
+India,"Financial Year (Apr - Mar), 2004",Arunachal Pradesh,Combined,380,31.4,
+India,"Financial Year (Apr - Mar), 2004",Assam,Rural,8940,36.4,478
+India,"Financial Year (Apr - Mar), 2004",Assam,Urban,830,21.8,600.03
+India,"Financial Year (Apr - Mar), 2004",Assam,Combined,9770,34.4,
+India,"Financial Year (Apr - Mar), 2004",Bihar,Rural,45100,55.7,433.43
+India,"Financial Year (Apr - Mar), 2004",Bihar,Urban,4280,43.7,526.18
+India,"Financial Year (Apr - Mar), 2004",Bihar,Combined,49380,54.4,
+India,"Financial Year (Apr - Mar), 2004",Chandigarh,Rural,20,34.7,
+India,"Financial Year (Apr - Mar), 2004",Chandigarh,Urban,90,10.1,
+India,"Financial Year (Apr - Mar), 2004",Chandigarh,Combined,110,11.6,
+India,"Financial Year (Apr - Mar), 2004",Chhattisgarh,Rural,9780,55.1,398.92
+India,"Financial Year (Apr - Mar), 2004",Chhattisgarh,Urban,1370,28.4,513.7
+India,"Financial Year (Apr - Mar), 2004",Chhattisgarh,Combined,11150,49.4,
+India,"Financial Year (Apr - Mar), 2004",Dadra & Nagar Haveli,Rural,110,63.6,
+India,"Financial Year (Apr - Mar), 2004",Dadra & Nagar Haveli,Urban,10,17.8,
+India,"Financial Year (Apr - Mar), 2004",Dadra & Nagar Haveli,Combined,130,49.3,
+India,"Financial Year (Apr - Mar), 2004",Daman & Diu,Rural,,2.6,
+India,"Financial Year (Apr - Mar), 2004",Daman & Diu,Urban,10,14.4,
+India,"Financial Year (Apr - Mar), 2004",Daman & Diu,Combined,20,8.8,
+India,"Financial Year (Apr - Mar), 2004",Delhi,Rural,110,15.6,541.39
+India,"Financial Year (Apr - Mar), 2004",Delhi,Urban,1830,12.9,642.47
+India,"Financial Year (Apr - Mar), 2004",Delhi,Combined,1930,13,
+India,"Financial Year (Apr - Mar), 2004",Goa,Rural,180,28.1,608.76
+India,"Financial Year (Apr - Mar), 2004",Goa,Urban,170,22.2,671.15
+India,"Financial Year (Apr - Mar), 2004",Goa,Combined,340,24.9,
+India,"Financial Year (Apr - Mar), 2004",Gujarat,Rural,12850,39.1,501.58
+India,"Financial Year (Apr - Mar), 2004",Gujarat,Urban,4290,20.1,659.18
+India,"Financial Year (Apr - Mar), 2004",Gujarat,Combined,17140,31.6,
+India,"Financial Year (Apr - Mar), 2004",Haryana,Rural,3880,24.8,529.42
+India,"Financial Year (Apr - Mar), 2004",Haryana,Urban,1590,22.4,626.41
+India,"Financial Year (Apr - Mar), 2004",Haryana,Combined,5460,24.1,
+India,"Financial Year (Apr - Mar), 2004",Himachal Pradesh,Rural,1430,25,520.4
+India,"Financial Year (Apr - Mar), 2004",Himachal Pradesh,Urban,30,4.6,605.74
+India,"Financial Year (Apr - Mar), 2004",Himachal Pradesh,Combined,1460,22.9,
+India,"Financial Year (Apr - Mar), 2004",Jammu & Kashmir,Rural,1160,14.1,522.3
+India,"Financial Year (Apr - Mar), 2004",Jammu & Kashmir,Urban,290,10.4,602.89
+India,"Financial Year (Apr - Mar), 2004",Jammu & Kashmir,Combined,1450,13.1,
+India,"Financial Year (Apr - Mar), 2004",Jharkhand,Rural,11620,51.6,404.79
+India,"Financial Year (Apr - Mar), 2004",Jharkhand,Urban,1600,23.8,531.35
+India,"Financial Year (Apr - Mar), 2004",Jharkhand,Combined,13210,45.3,
+India,"Financial Year (Apr - Mar), 2004",Karnataka,Rural,13470,37.5,417.84
+India,"Financial Year (Apr - Mar), 2004",Karnataka,Urban,5180,25.9,588.06
+India,"Financial Year (Apr - Mar), 2004",Karnataka,Combined,18650,33.3,
+India,"Financial Year (Apr - Mar), 2004",Kerala,Rural,4220,20.2,537.31
+India,"Financial Year (Apr - Mar), 2004",Kerala,Urban,1980,18.4,584.7
+India,"Financial Year (Apr - Mar), 2004",Kerala,Combined,6200,19.6,
+India,"Financial Year (Apr - Mar), 2004",Lakshwadeep,Rural,,0.4,
+India,"Financial Year (Apr - Mar), 2004",Lakshwadeep,Urban,,10.5,
+India,"Financial Year (Apr - Mar), 2004",Lakshwadeep,Combined,,6.4,
+India,"Financial Year (Apr - Mar), 2004",Madhya Pradesh,Rural,25440,53.6,408.41
+India,"Financial Year (Apr - Mar), 2004",Madhya Pradesh,Urban,6130,35.1,532.26
+India,"Financial Year (Apr - Mar), 2004",Madhya Pradesh,Combined,31570,48.6,
+India,"Financial Year (Apr - Mar), 2004",Maharashtra,Rural,27780,47.9,484.89
+India,"Financial Year (Apr - Mar), 2004",Maharashtra,Urban,11460,25.6,631.85
+India,"Financial Year (Apr - Mar), 2004",Maharashtra,Combined,39240,38.2,
+India,"Financial Year (Apr - Mar), 2004",Manipur,Rural,670,39.3,578.11
+India,"Financial Year (Apr - Mar), 2004",Manipur,Urban,230,34.5,641.13
+India,"Financial Year (Apr - Mar), 2004",Manipur,Combined,900,37.9,
+India,"Financial Year (Apr - Mar), 2004",Meghalaya,Rural,290,14,503.32
+India,"Financial Year (Apr - Mar), 2004",Meghalaya,Urban,120,24.7,745.73
+India,"Financial Year (Apr - Mar), 2004",Meghalaya,Combined,410,16.1,
+India,"Financial Year (Apr - Mar), 2004",Mizoram,Rural,110,23,639.27
+India,"Financial Year (Apr - Mar), 2004",Mizoram,Urban,40,7.9,699.75
+India,"Financial Year (Apr - Mar), 2004",Mizoram,Combined,150,15.4,
+India,"Financial Year (Apr - Mar), 2004",Nagaland,Rural,150,10,687.3
+India,"Financial Year (Apr - Mar), 2004",Nagaland,Urban,20,4.3,782.93
+India,"Financial Year (Apr - Mar), 2004",Nagaland,Combined,170,8.8,
+India,"Financial Year (Apr - Mar), 2004",Odisha,Rural,19880,60.8,407.78
+India,"Financial Year (Apr - Mar), 2004",Odisha,Urban,2280,37.6,497.31
+India,"Financial Year (Apr - Mar), 2004",Odisha,Combined,22160,57.2,
+India,"Financial Year (Apr - Mar), 2004",Puducherry,Rural,80,22.9,385.45
+India,"Financial Year (Apr - Mar), 2004",Puducherry,Urban,70,9.9,506.17
+India,"Financial Year (Apr - Mar), 2004",Puducherry,Combined,150,14.2,
+India,"Financial Year (Apr - Mar), 2004",Punjab,Rural,3670,22.1,543.51
+India,"Financial Year (Apr - Mar), 2004",Punjab,Urban,1690,18.7,642.51
+India,"Financial Year (Apr - Mar), 2004",Punjab,Combined,5360,20.9,
+India,"Financial Year (Apr - Mar), 2004",Rajasthan,Rural,16640,35.8,478
+India,"Financial Year (Apr - Mar), 2004",Rajasthan,Urban,4350,29.7,568.15
+India,"Financial Year (Apr - Mar), 2004",Rajasthan,Combined,20980,34.4,
+India,"Financial Year (Apr - Mar), 2004",Sikkim,Rural,150,31.8,531.5
+India,"Financial Year (Apr - Mar), 2004",Sikkim,Urban,20,25.9,741.68
+India,"Financial Year (Apr - Mar), 2004",Sikkim,Combined,170,30.9,
+India,"Financial Year (Apr - Mar), 2004",Tamil Nadu,Rural,13440,37.5,441.69
+India,"Financial Year (Apr - Mar), 2004",Tamil Nadu,Urban,5970,19.7,559.77
+India,"Financial Year (Apr - Mar), 2004",Tamil Nadu,Combined,19410,29.4,
+India,"Financial Year (Apr - Mar), 2004",Tripura,Rural,1190,44.5,450.49
+India,"Financial Year (Apr - Mar), 2004",Tripura,Urban,150,22.5,555.79
+India,"Financial Year (Apr - Mar), 2004",Tripura,Combined,1340,40,
+India,"Financial Year (Apr - Mar), 2004",Uttar Pradesh,Rural,60050,42.7,435.14
+India,"Financial Year (Apr - Mar), 2004",Uttar Pradesh,Urban,13010,34.1,532.12
+India,"Financial Year (Apr - Mar), 2004",Uttar Pradesh,Combined,73070,40.9,
+India,"Financial Year (Apr - Mar), 2004",Uttarakhand,Rural,2310,35.1,486.24
+India,"Financial Year (Apr - Mar), 2004",Uttarakhand,Urban,660,26.2,602.39
+India,"Financial Year (Apr - Mar), 2004",Uttarakhand,Combined,2970,32.7,
+India,"Financial Year (Apr - Mar), 2004",West Bengal,Rural,22750,38.2,445.38
+India,"Financial Year (Apr - Mar), 2004",West Bengal,Urban,6080,24.4,572.51
+India,"Financial Year (Apr - Mar), 2004",West Bengal,Combined,28830,34.2,
+India,"Financial Year (Apr - Mar), 1999",Andaman & Nicobar Islands,Rural,58,20.55,307
+India,"Financial Year (Apr - Mar), 1999",Andaman & Nicobar Islands,Urban,24,22.11,475
+India,"Financial Year (Apr - Mar), 1999",Andaman & Nicobar Islands,Combined,82,20.99,
+India,"Financial Year (Apr - Mar), 1999",Andhra Pradesh,Rural,5813,11.05,262
+India,"Financial Year (Apr - Mar), 1999",Andhra Pradesh,Urban,6088,26.63,457
+India,"Financial Year (Apr - Mar), 1999",Andhra Pradesh,Combined,11901,15.77,
+India,"Financial Year (Apr - Mar), 1999",Arunachal Pradesh,Rural,380,40.04,365
+India,"Financial Year (Apr - Mar), 1999",Arunachal Pradesh,Urban,18,7.47,343
+India,"Financial Year (Apr - Mar), 1999",Arunachal Pradesh,Combined,398,33.47,
+India,"Financial Year (Apr - Mar), 1999",Assam,Rural,9217,40.04,365
+India,"Financial Year (Apr - Mar), 1999",Assam,Urban,238,7.47,343
+India,"Financial Year (Apr - Mar), 1999",Assam,Combined,9455,36.09,
+India,"Financial Year (Apr - Mar), 1999",Bihar,Rural,37651,44.3,333
+India,"Financial Year (Apr - Mar), 1999",Bihar,Urban,4913,32.91,379
+India,"Financial Year (Apr - Mar), 1999",Bihar,Combined,42564,42.6,
+India,"Financial Year (Apr - Mar), 1999",Chandigarh,Rural,6,5.75,388
+India,"Financial Year (Apr - Mar), 1999",Chandigarh,Urban,45,5.75,388
+India,"Financial Year (Apr - Mar), 1999",Chandigarh,Combined,51,5.75,
+India,"Financial Year (Apr - Mar), 1999",Dadra & Nagar Haveli,Rural,30,17.57,318
+India,"Financial Year (Apr - Mar), 1999",Dadra & Nagar Haveli,Urban,3,13.52,539
+India,"Financial Year (Apr - Mar), 1999",Dadra & Nagar Haveli,Combined,33,17.14,
+India,"Financial Year (Apr - Mar), 1999",Daman & Diu,Rural,1,1.35,318
+India,"Financial Year (Apr - Mar), 1999",Daman & Diu,Urban,5,7.52,539
+India,"Financial Year (Apr - Mar), 1999",Daman & Diu,Combined,6,4.44,
+India,"Financial Year (Apr - Mar), 1999",Delhi,Rural,7,0.4,362
+India,"Financial Year (Apr - Mar), 1999",Delhi,Urban,1142,9.42,505
+India,"Financial Year (Apr - Mar), 1999",Delhi,Combined,1149,8.23,
+India,"Financial Year (Apr - Mar), 1999",Goa,Rural,11,1.35,318
+India,"Financial Year (Apr - Mar), 1999",Goa,Urban,59,7.52,539
+India,"Financial Year (Apr - Mar), 1999",Goa,Combined,70,4.4,
+India,"Financial Year (Apr - Mar), 1999",Gujarat,Rural,3980,13.17,318
+India,"Financial Year (Apr - Mar), 1999",Gujarat,Urban,2809,15.59,474
+India,"Financial Year (Apr - Mar), 1999",Gujarat,Combined,6789,14.07,
+India,"Financial Year (Apr - Mar), 1999",Haryana,Rural,1194,8.27,362
+India,"Financial Year (Apr - Mar), 1999",Haryana,Urban,539,9.99,420
+India,"Financial Year (Apr - Mar), 1999",Haryana,Combined,1734,8.74,
+India,"Financial Year (Apr - Mar), 1999",Himachal Pradesh,Rural,484,7.94,367
+India,"Financial Year (Apr - Mar), 1999",Himachal Pradesh,Urban,29,4.63,420
+India,"Financial Year (Apr - Mar), 1999",Himachal Pradesh,Combined,512,7.63,
+India,"Financial Year (Apr - Mar), 1999",Jammu & Kashmir,Rural,297,3.97,367
+India,"Financial Year (Apr - Mar), 1999",Jammu & Kashmir,Urban,49,1.98,420
+India,"Financial Year (Apr - Mar), 1999",Jammu & Kashmir,Combined,346,3.48,
+India,"Financial Year (Apr - Mar), 1999",Karnataka,Rural,5991,17.38,309
+India,"Financial Year (Apr - Mar), 1999",Karnataka,Urban,4449,25.25,511
+India,"Financial Year (Apr - Mar), 1999",Karnataka,Combined,10440,20.04,
+India,"Financial Year (Apr - Mar), 1999",Kerala,Rural,2097,9.38,374
+India,"Financial Year (Apr - Mar), 1999",Kerala,Urban,2007,20.27,477
+India,"Financial Year (Apr - Mar), 1999",Kerala,Combined,4104,12.72,
+India,"Financial Year (Apr - Mar), 1999",Lakshwadeep,Rural,3,9.38,374
+India,"Financial Year (Apr - Mar), 1999",Lakshwadeep,Urban,8,20.27,477
+India,"Financial Year (Apr - Mar), 1999",Lakshwadeep,Combined,11,15.6,
+India,"Financial Year (Apr - Mar), 1999",Madhya Pradesh,Rural,21732,37.06,311
+India,"Financial Year (Apr - Mar), 1999",Madhya Pradesh,Urban,8122,38.44,481
+India,"Financial Year (Apr - Mar), 1999",Madhya Pradesh,Combined,29854,37.43,
+India,"Financial Year (Apr - Mar), 1999",Maharashtra,Rural,12512,23.72,318
+India,"Financial Year (Apr - Mar), 1999",Maharashtra,Urban,10287,26.81,539
+India,"Financial Year (Apr - Mar), 1999",Maharashtra,Combined,22799,25.02,
+India,"Financial Year (Apr - Mar), 1999",Manipur,Rural,653,40.04,365
+India,"Financial Year (Apr - Mar), 1999",Manipur,Urban,66,7.47,343
+India,"Financial Year (Apr - Mar), 1999",Manipur,Combined,719,28.54,
+India,"Financial Year (Apr - Mar), 1999",Meghalaya,Rural,789,40.04,365
+India,"Financial Year (Apr - Mar), 1999",Meghalaya,Urban,34,7.47,343
+India,"Financial Year (Apr - Mar), 1999",Meghalaya,Combined,823,33.87,
+India,"Financial Year (Apr - Mar), 1999",Mizoram,Rural,140,40.04,365
+India,"Financial Year (Apr - Mar), 1999",Mizoram,Urban,45,7.47,343
+India,"Financial Year (Apr - Mar), 1999",Mizoram,Combined,185,19.47,
+India,"Financial Year (Apr - Mar), 1999",Nagaland,Rural,521,40.04,365
+India,"Financial Year (Apr - Mar), 1999",Nagaland,Urban,28,7.47,343
+India,"Financial Year (Apr - Mar), 1999",Nagaland,Combined,549,32.67,
+India,"Financial Year (Apr - Mar), 1999",Odisha,Rural,14369,48.01,323
+India,"Financial Year (Apr - Mar), 1999",Odisha,Urban,2540,42.83,473
+India,"Financial Year (Apr - Mar), 1999",Odisha,Combined,16909,47.15,
+India,"Financial Year (Apr - Mar), 1999",Puducherry,Rural,64,20.55,307
+India,"Financial Year (Apr - Mar), 1999",Puducherry,Urban,177,22.11,475
+India,"Financial Year (Apr - Mar), 1999",Puducherry,Combined,241,21.67,
+India,"Financial Year (Apr - Mar), 1999",Punjab,Rural,1020,6.35,362
+India,"Financial Year (Apr - Mar), 1999",Punjab,Urban,429,5.75,388
+India,"Financial Year (Apr - Mar), 1999",Punjab,Combined,1449,6.16,
+India,"Financial Year (Apr - Mar), 1999",Rajasthan,Rural,5506,13.74,344
+India,"Financial Year (Apr - Mar), 1999",Rajasthan,Urban,2678,19.85,465
+India,"Financial Year (Apr - Mar), 1999",Rajasthan,Combined,8183,15.28,
+India,"Financial Year (Apr - Mar), 1999",Sikkim,Rural,200,40.04,365
+India,"Financial Year (Apr - Mar), 1999",Sikkim,Urban,4,7.47,343
+India,"Financial Year (Apr - Mar), 1999",Sikkim,Combined,205,36.55,
+India,"Financial Year (Apr - Mar), 1999",Tamil Nadu,Rural,8051,20.55,307
+India,"Financial Year (Apr - Mar), 1999",Tamil Nadu,Urban,4997,22.11,475
+India,"Financial Year (Apr - Mar), 1999",Tamil Nadu,Combined,13048,21.12,
+India,"Financial Year (Apr - Mar), 1999",Tripura,Rural,1253,40.04,365
+India,"Financial Year (Apr - Mar), 1999",Tripura,Urban,49,7.47,343
+India,"Financial Year (Apr - Mar), 1999",Tripura,Combined,1302,34.44,
+India,"Financial Year (Apr - Mar), 1999",Uttar Pradesh,Rural,41201,31.22,336
+India,"Financial Year (Apr - Mar), 1999",Uttar Pradesh,Urban,11788,30.89,416
+India,"Financial Year (Apr - Mar), 1999",Uttar Pradesh,Combined,52989,31.15,
+India,"Financial Year (Apr - Mar), 1999",West Bengal,Rural,18011,31.85,350
+India,"Financial Year (Apr - Mar), 1999",West Bengal,Urban,3338,14.86,409
+India,"Financial Year (Apr - Mar), 1999",West Bengal,Combined,21349,27.02,

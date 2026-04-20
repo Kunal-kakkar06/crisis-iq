@@ -6,6 +6,7 @@
 import { useState, useCallback, useMemo, useRef, memo } from 'react';
 import { GoogleMap, useJsApiLoader, HeatmapLayerF, Autocomplete } from '@react-google-maps/api';
 import { darkMapStyle, GOOGLE_MAPS_ID, GOOGLE_MAPS_LIBRARIES } from '../config/googleMaps';
+import { useTheme } from '../context/ThemeContext';
 import './CitizenRequests.css';
 
 // ── Mock Data ─────────────────────────────────────────
@@ -30,6 +31,7 @@ const sectorHealth = [
 ];
 
 export default memo(function CitizenRequests() {
+  const { isDark } = useTheme();
   const [requests, setRequests] = useState(initialRequests);
   const [filter, setFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -289,10 +291,10 @@ export default memo(function CitizenRequests() {
                   center={{ lat: 10.5, lng: 76.5 }}
                   zoom={7}
                   options={{
-                    styles: darkMapStyle,
+                    styles: isDark ? darkMapStyle : [],
                     disableDefaultUI: true,
                     zoomControl: true,
-                    backgroundColor: '#050A14'
+                    backgroundColor: isDark ? '#050A14' : '#F0F4F8'
                   }}
                 >
                   {heatmapData.length > 0 && (

@@ -6,6 +6,7 @@ import { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 import Layout from './components/Layout';
+import { ThemeProvider } from './context/ThemeContext';
 
 import Dashboard from './pages/Dashboard';
 const ResourceMap = lazy(() => import('./pages/ResourceMap'));
@@ -23,24 +24,24 @@ const SuspenseFallback = () => (
 
 function App() {
   return (
-    <Router>
-      <Layout>
-        <Suspense fallback={<SuspenseFallback />}>
-          <Routes>
-            {/* Default route redirects to dashboard */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
-            {/* Core application routes */}
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/resource-map" element={<ResourceMap />} />
-            <Route path="/allocation-engine" element={<AllocationEngine />} />
-            <Route path="/fairness-analytics" element={<FairnessAnalytics />} />
-            <Route path="/transparency-log" element={<TransparencyLog />} />
-            <Route path="/citizen-requests" element={<CitizenRequests />} />
-          </Routes>
-        </Suspense>
-      </Layout>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <Layout>
+          <Suspense fallback={<SuspenseFallback />}>
+            <Routes>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/resource-map" element={<ResourceMap />} />
+              <Route path="/allocation-engine" element={<AllocationEngine />} />
+              <Route path="/fairness-analytics" element={<FairnessAnalytics />} />
+              <Route path="/transparency-log" element={<TransparencyLog />} />
+              <Route path="/citizen-requests" element={<CitizenRequests />} />
+              {/* Default route redirects to dashboard */}
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </Suspense>
+        </Layout>
+      </Router>
+    </ThemeProvider>
   );
 }
 
