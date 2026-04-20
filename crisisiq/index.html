@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="CrisisIQ — AI-powered disaster resource allocation platform for real-time emergency response, fairness analytics, and citizen engagement." />
+    <meta name="keywords" content="CrisisIQ, disaster response, AI, resource allocation, emergency management, Google Solution Challenge" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <title>CrisisIQ — AI-Powered Disaster Resource Allocation</title>
+    <!-- Google Translate Script Initialization -->
+    <script type="text/javascript">
+      function googleTranslateElementInit() {
+        const checkExist = setInterval(function() {
+          // Wait for React to render the element into the DOM
+          if (document.getElementById('google_translate_element')) {
+            new google.translate.TranslateElement(
+              { 
+                pageLanguage: 'en', 
+                includedLanguages: 'en,hi,bn,te,mr,ta,ur,gu,kn,or,pa,ml,as', 
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE 
+              },
+              'google_translate_element'
+            );
+            clearInterval(checkExist);
+          }
+        }, 100);
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <script type="text/javascript" async src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  </body>
+</html>
