@@ -16,34 +16,42 @@ import {
 } from '@react-google-maps/api';
 import { 
   darkMapStyle, 
-  keralaZones, 
   KERALA_CENTER, 
   GOOGLE_MAPS_LIBRARIES,
   GOOGLE_MAPS_ID,
-  heatmapIntensities
 } from '../config/googleMaps';
+import { getKeralaZones } from '../utils/dataLoader';
 import { useTheme } from '../context/ThemeContext';
 import './ResourceMap.css';
 
-// ── Generate weighted heatmap points using exact intensities ──
-const getHeatmapPoints = () => {
-  if (!window.google) return [];
+// ── Generate weighted heatmap points using real severity scores ──
+const getHeatmapPoints = (zones) => {
+  if (!window.google || !zones) return [];
   const points = [];
-  heatmapIntensities.forEach(zone => {
-    // Generate multiple points proportional to intensity
-    // Higher intensity = more clustered points = brighter heat
-    const count = Math.ceil(zone.intensity * 20);
+  zones.forEach(zone => {
+    const intensity = zone.severityScore / 100;
+    const count = Math.ceil(intensity * 20);
     for (let i = 0; i < count; i++) {
       const jitterLat = zone.lat + (Math.random() - 0.5) * 0.12;
       const jitterLng = zone.lng + (Math.random() - 0.5) * 0.12;
       points.push({
         location: new window.google.maps.LatLng(jitterLat, jitterLng),
-        weight: zone.intensity
+        weight: intensity
       });
     }
   });
   return points;
 };
+
+// Blue hospital cross SVG icon
+const HOSPITAL_ICON = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+  <circle cx="10" cy="10" r="9" fill="#1565C0" stroke="white" stroke-width="1.5"/>
+  <rect x="8.5" y="4" width="3" height="12" rx="1" fill="white"/>
+  <rect x="4" y="8.5" width="12" height="3" rx="1" fill="white"/>
+</svg>
+`)}`;
+
 
 function ResourceMap() {
   const { isDark } = useTheme();
@@ -53,7 +61,21 @@ function ResourceMap() {
   const [activeSeverity, setActiveSeverity] = useState('All');
   const [activeDistrict, setActiveDistrict] = useState('All');
   const [routeEta, setRouteEta] = useState(null);
+  const [realZones, setRealZones] = useState([]);
+  const [allHospitals, setAllHospitals] = useState([]);
   const mapRef = useRef(null);
+
+  // Load real CSV data
+  useEffect(() => {
+    getKeralaZones().then(zones => {
+      setRealZones(zones);
+      // Flatten all hospitals from all zones
+      const hospitals = zones.flatMap(z =>
+        (z.hospitals || []).map(h => ({ ...h, districtName: z.name }))
+      );
+      setAllHospitals(hospitals);
+    }).catch(console.error);
+  }, []);
 
   // Load Maps with visualization + places libraries
   const { isLoaded, loadError } = useJsApiLoader({
@@ -106,12 +128,15 @@ function ResourceMap() {
     }
   };
 
-  // Filtering
-  const filteredZones = keralaZones.filter(zone => {
+  // Filtering — use real zones
+  const filteredZones = realZones.filter(zone => {
     if (activeSeverity !== 'All' && zone.severity !== activeSeverity.toUpperCase()) return false;
     if (activeDistrict !== 'All' && zone.name !== activeDistrict) return false;
     return true;
   });
+
+  // Scale zone marker by severity score (bigger = more critical)
+  const getMarkerScale = (score) => 8 + (score / 100) * 8;
 
   // Calculate progress bar width
   const getProgressWidth = (resources, need) => {
@@ -157,12 +182,13 @@ function ResourceMap() {
           streetViewControl: false,
           fullscreenControl: true,
           backgroundColor: isDark ? '#050A14' : '#F0F4F8',
+          gestureHandling: 'cooperative',
         }}
         onClick={() => setSelectedZone(null)}
       >
-        {/* Heatmap Layer with exact intensity data */}
+        {/* Heatmap Layer with real intensity from severity scores */}
         <HeatmapLayerF
-          data={getHeatmapPoints()}
+          data={getHeatmapPoints(realZones)}
           options={{
             radius: 45,
             opacity: 0.7,
@@ -203,7 +229,7 @@ function ResourceMap() {
           />
         )}
 
-        {/* Custom Markers */}
+        {/* Zone Markers — sized by real severity score */}
         {filteredZones.map((zone) => {
           const svgMarker = {
             path: window.google.maps.SymbolPath.CIRCLE,
@@ -211,7 +237,7 @@ function ResourceMap() {
             fillOpacity: 1,
             strokeWeight: 2,
             strokeColor: '#FFFFFF',
-            scale: 10,
+            scale: getMarkerScale(zone.severityScore),
           };
 
           return (
@@ -224,6 +250,16 @@ function ResourceMap() {
           );
         })}
 
+        {/* Hospital markers — small blue cross icons */}
+        {allHospitals.map((h, idx) => (
+          <MarkerF
+            key={`hosp-${idx}`}
+            position={{ lat: h.lat, lng: h.lng }}
+            icon={{ url: HOSPITAL_ICON, scaledSize: window.google ? new window.google.maps.Size(18, 18) : null }}
+            title={`${h.name} — ${h.districtName}`}
+          />
+        ))}
+
         {/* Custom Dark-Themed Info Window */}
         {selectedZone && (
           <InfoWindowF
@@ -231,40 +267,44 @@ function ResourceMap() {
             onCloseClick={() => setSelectedZone(null)}
             options={{ maxWidth: 320 }}
           >
-            <div className="dark-info-window">
-              <h3 className="diw-title">{selectedZone.name}</h3>
-              <span 
-                className="diw-severity-pill"
-                style={{ 
-                  backgroundColor: `${selectedZone.color}22`,
-                  color: selectedZone.color,
-                  border: `1px solid ${selectedZone.color}55`
-                }}
-              >
-                {selectedZone.severity}
-              </span>
-              <div className="diw-stats">
-                <div className="diw-row">
-                  <span className="diw-label">Resources:</span>
-                  <span className="diw-value">{selectedZone.resources} available</span>
+              <div className="dark-info-window">
+                <h3 className="diw-title">{selectedZone.name}</h3>
+                <span 
+                  className="diw-severity-pill"
+                  style={{ 
+                    backgroundColor: `${selectedZone.color}22`,
+                    color: selectedZone.color,
+                    border: `1px solid ${selectedZone.color}55`
+                  }}
+                >
+                  {selectedZone.severity} — Score: {selectedZone.severityScore?.toFixed(1)}
+                </span>
+                <div className="diw-stats">
+                  <div className="diw-row">
+                    <span className="diw-label">Fatalities:</span>
+                    <span className="diw-value">{selectedZone.fatalities ?? 'N/A'}</span>
+                  </div>
+                  <div className="diw-row">
+                    <span className="diw-label">Rainfall excess:</span>
+                    <span className="diw-value">{selectedZone.rainfallDeviation?.toFixed(0) ?? 'N/A'} mm</span>
+                  </div>
+                  <div className="diw-row">
+                    <span className="diw-label">Landslides:</span>
+                    <span className="diw-value">{selectedZone.landslides ?? 'N/A'}</span>
+                  </div>
+                  <div className="diw-row">
+                    <span className="diw-label">Nearest hospital:</span>
+                    <span className="diw-value">{selectedZone.hospitals?.[0]?.name?.slice(0, 28) || 'No data'}</span>
+                  </div>
+                  <div className="diw-row">
+                    <span className="diw-label">Relief camps:</span>
+                    <span className="diw-value">{selectedZone.reliefCamps ?? 'N/A'}</span>
+                  </div>
                 </div>
-                <div className="diw-row">
-                  <span className="diw-label">Affected:</span>
-                  <span className="diw-value">{selectedZone.affected?.toLocaleString() || selectedZone.population?.toLocaleString()} people</span>
-                </div>
-                <div className="diw-row">
-                  <span className="diw-label">Severity Score:</span>
-                  <span className="diw-value">{selectedZone.severityScore?.toFixed(1) || (selectedZone.score * 10).toFixed(1)} / 100</span>
-                </div>
-                <div className="diw-row">
-                  <span className="diw-label">Last updated:</span>
-                  <span className="diw-value">{selectedZone.lastUpdated}</span>
-                </div>
+                <a className="diw-link" href="#" onClick={(e) => e.preventDefault()}>
+                  View Details →
+                </a>
               </div>
-              <a className="diw-link" href="#" onClick={(e) => e.preventDefault()}>
-                View Details →
-              </a>
-            </div>
           </InfoWindowF>
         )}
       </GoogleMap>
@@ -303,7 +343,7 @@ function ResourceMap() {
           <label>District</label>
           <select value={activeDistrict} onChange={(e) => setActiveDistrict(e.target.value)}>
             <option>All</option>
-            {keralaZones.map(z => <option key={z.id}>{z.name}</option>)}
+            {realZones.map(z => <option key={z.id}>{z.name}</option>)}
           </select>
         </div>
 
@@ -390,12 +430,15 @@ function ResourceMap() {
                             <span className="res-count">{zone.resources} res</span>
                             <span className="res-need">/ {zone.need} needed</span>
                         </div>
+                        <div style={{ fontSize: '11px', color: '#4a6380', marginTop: '2px' }}>
+                            Score: {zone.severityScore?.toFixed(1)} | ⚡ {zone.fatalities} fatalities
+                        </div>
                         
                         <div className="zone-progress-track">
                             <div 
                                 className="zone-progress-fill" 
                                 style={{
-                                    width: `${getProgressWidth(zone.resources, zone.need)}%`,
+                                    width: `${Math.min((zone.resources / Math.max(zone.need, 1)) * 100, 100)}%`,
                                     background: zone.color
                                 }}
                             ></div>

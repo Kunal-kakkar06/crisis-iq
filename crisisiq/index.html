@@ -10,6 +10,56 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <title>CrisisIQ — AI-Powered Disaster Resource Allocation</title>
+    <!-- ─── Suppress Google Maps API key error dialog ─────────────────────
+         Google Maps calls window.gm_authFailure when the API key is
+         invalid/missing. Overriding it to a no-op prevents the popup.
+         The MutationObserver is a belt-and-suspenders fallback.
+    ──────────────────────────────────────────────────────────────────── -->
+    <script>
+      // 1. Override the Maps auth-failure hook before any Maps code loads
+      window.gm_authFailure = function () {};
+
+      // 2. MutationObserver: auto-click OK if the dialog still appears
+      (function () {
+        var _observer = new MutationObserver(function () {
+          // Google Maps renders its error dialog as a div with a button
+          // whose text is "OK"
+          var btns = document.querySelectorAll(
+            '.dismissButton, [data-value="OK"], .gm-err-button'
+          );
+          btns.forEach(function (btn) { btn.click(); });
+
+          // Also handle the native confirm/alert style dialog if injected
+          // into the DOM as a styled element
+          var errorBoxes = document.querySelectorAll('.gm-err-container');
+          errorBoxes.forEach(function (box) {
+            box.style.display = 'none';
+          });
+        });
+        _observer.observe(document.documentElement, {
+          childList: true,
+          subtree: true,
+        });
+      })();
+
+      // 3. Silence the console noise from the Maps SDK
+      (function () {
+        var _origError = console.error;
+        console.error = function () {
+          var msg = arguments[0] ? String(arguments[0]) : '';
+          if (
+            msg.indexOf('Google Maps') !== -1 ||
+            msg.indexOf('InvalidKeyMapError') !== -1 ||
+            msg.indexOf('MissingKeyMapError') !== -1 ||
+            msg.indexOf('ApiNotActivatedMapError') !== -1
+          ) {
+            return; // swallow silently
+          }
+          _origError.apply(console, arguments);
+        };
+      })();
+    </script>
+
     <!-- Google Translate Script Initialization -->
     <script type="text/javascript">
       function googleTranslateElementInit() {

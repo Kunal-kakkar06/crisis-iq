@@ -11,6 +11,7 @@ import {
 import axios from 'axios';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { getKeralaZones } from '../utils/dataLoader';
 import './AllocationEngine.css';
 
 // ── Initial Allocation Data ───────────────────────
@@ -96,6 +97,24 @@ function Toast({ message, onDone }) {
   );
 }
 
+// ── Resource types by severity ─────────────────────
+const RESOURCE_TYPES = [
+  'Medical Unit', 'Search & Rescue', 'Food Supply',
+  'Water Tanker', 'Engineering Team', 'Shelter Kit',
+  'Ambulance', 'Police Support',
+];
+
+function buildAllocationsFromZones(zones) {
+  return zones.slice().sort((a, b) => b.severityScore - a.severityScore).map((zone, idx) => ({
+    id: `RES-${String(idx + 1).padStart(3, '0')}`,
+    type: RESOURCE_TYPES[idx % RESOURCE_TYPES.length],
+    district: zone.name,
+    priority: zone.severityScore,
+    status: zone.severity === 'CRITICAL' ? 'EN ROUTE' :
+            zone.severity === 'HIGH'     ? 'DEPLOYED' : 'STANDBY',
+  }));
+}
+
 // ===================================================
 // Main AllocationEngine Component
 // ===================================================
@@ -106,6 +125,13 @@ function AllocationEngine() {
   const [toastMsg, setToastMsg] = useState('');
   const [animatingRows, setAnimatingRows] = useState(new Set());
   const countdown = useCountdown(154);
+
+  // Load real district data on mount
+  useEffect(() => {
+    getKeralaZones().then(zones => {
+      setAllocations(buildAllocationsFromZones(zones));
+    }).catch(console.error);
+  }, []);
 
   // Fetch predictive data from FastAPI
   const fetchPrediction = useCallback(async () => {
