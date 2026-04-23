@@ -461,15 +461,15 @@
 
 .fairness-bar-track {
   flex: 1;
-  height: 8px;
+  height: 6px;
   background: rgba(255, 255, 255, 0.06);
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
 }
 
 .fairness-bar-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 3px;
   transition: width 1.5s ease-out;
 }
 
@@ -870,3 +870,153 @@
   margin: 0;
   color: #fff;
 }
+
+/* ============================================
+   LIGHT MODE OVERRIDES
+   ============================================ */
+
+/* Stat Cards */
+.light .stat-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8EF;
+  border-left: 4px solid var(--stat-accent, #378ADD);
+  border-radius: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
+  padding: 20px 24px;
+  min-height: 100px;
+}
+.light .stat-card::before,
+.light .stat-card::after { display: none; }
+.light .stat-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+  transform: translateY(-2px);
+}
+.light .stat-card:nth-child(1) { --stat-accent: #E24B4A; }
+.light .stat-card:nth-child(2) { --stat-accent: #EF9F27; }
+.light .stat-card:nth-child(3) { --stat-accent: #1D9E75; }
+.light .stat-card:nth-child(4) { --stat-accent: #378ADD; }
+.light .stat-card:nth-child(5) { --stat-accent: #7F77DD; }
+
+.light .stat-card:nth-child(1) .stat-icon { background: #FCEBEB; }
+.light .stat-card:nth-child(2) .stat-icon { background: #FAEEDA; }
+.light .stat-card:nth-child(3) .stat-icon { background: #E1F5EE; }
+.light .stat-card:nth-child(4) .stat-icon { background: #E6F1FB; }
+.light .stat-card:nth-child(5) .stat-icon { background: #EEEDFE; }
+
+.light .stat-card:nth-child(1) .stat-value { color: #E24B4A; text-shadow: none; }
+.light .stat-card:nth-child(2) .stat-value { color: #BA7517; text-shadow: none; }
+.light .stat-card:nth-child(3) .stat-value { color: #0F6E56; text-shadow: none; }
+.light .stat-card:nth-child(4) .stat-value { color: #185FA5; text-shadow: none; }
+.light .stat-card:nth-child(5) .stat-value { color: #534AB7; text-shadow: none; }
+
+.light .stat-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #64748B;
+}
+.light .stat-value {
+  font-size: 36px; font-weight: 800; letter-spacing: -0.5px;
+}
+.light .stat-change, .light .stat-change-up { color: #94A3B8; }
+
+/* Panels */
+.light .panel-tactical,
+.light .panel-audit,
+.light .panel-fairness,
+.light .panel-citizen,
+.light .panel-allocation {
+  background: #FFFFFF;
+  border: 1px solid #E2E8EF;
+  border-radius: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
+}
+.light .panel-tactical:hover,
+.light .panel-audit:hover,
+.light .panel-fairness:hover,
+.light .panel-citizen:hover,
+.light .panel-allocation:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.10); }
+
+.light .panel-header h2 { color: #0F1E2E; }
+.light .section-title { color: #378ADD; }
+.light .section-title h3 { color: #0F1E2E; }
+
+/* Live indicator */
+.light .live-indicator { color: #E24B4A; }
+.light .live-dot {
+  background: #E24B4A;
+  animation: live-pulse 1.5s ease-in-out infinite;
+}
+@keyframes live-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.4); opacity: 0.3; }
+}
+
+/* Map */
+.light .map-wrapper { background: #E8EEF4; border: 1px solid #E2E8EF; }
+.light .map-fallback-header { color: #378ADD; }
+.light .zone-name { color: #1E293B; }
+.light .zone-card-mini { background: #F8FAFC; }
+.light .zone-resources { color: #64748B; }
+.light .map-fallback-note { color: #94A3B8; }
+.light .map-fallback-note code { color: #378ADD; background: #E6F1FB; }
+.light .btn-expand {
+  background: #E6F1FB; border-color: #B5D4F4; color: #185FA5;
+}
+.light .btn-expand:hover { background: #D0E8FA; box-shadow: 0 4px 12px rgba(55,138,221,0.15); }
+
+/* Fairness */
+.light .fairness-label { color: #64748B; }
+.light .fairness-bar-track { background: #F1F5F9; }
+.light .fairness-bar-before { background: #E24B4A; box-shadow: none; }
+.light .fairness-bar-after  { background: #1D9E75; box-shadow: none; }
+.light .fairness-score-bad  { color: #E24B4A; }
+.light .fairness-score-good { color: #0F6E56; }
+.light .fairness-result {
+  background: #E1F5EE; border: 1px solid #9FE1CB;
+  color: #0F6E56; font-weight: 700; font-size: 13px;
+}
+.light .ai-google-badge { background: #F8FAFC; border: 1px solid #E2E8EF; }
+.light .google-ai-text { color: #64748B; }
+
+/* Audit */
+.light .audit-item { background: #F8FAFC; border-left: 2px solid #B5D4F4; }
+.light .audit-item:hover { background: #EFF6FF; }
+.light .audit-action { color: #1E293B; }
+.light .audit-zone { color: #378ADD; }
+.light .audit-time { color: #94A3B8; }
+
+/* Citizen */
+.light .citizen-item { background: #F8FAFC; border: 1px solid #E2E8EF; }
+.light .citizen-item:hover { background: #F0F7FF; border-color: #B5D4F4; }
+.light .citizen-name { color: #1E293B; }
+.light .citizen-location, .light .citizen-time { color: #94A3B8; }
+.light .panel-count { background: #F1F5F9; color: #64748B; }
+
+/* Priority Badges */
+.light .badge-critical { background: #FCEBEB; color: #A32D2D; border: 1px solid #F09595; }
+.light .badge-high     { background: #FAEEDA; color: #854F0B; border: 1px solid #FAC775; }
+.light .badge-medium   { background: #EAF3DE; color: #3B6D11; border: 1px solid #C0DD97; }
+.light .badge-low      { background: #E1F5EE; color: #0F6E56; border: 1px solid #9FE1CB; }
+.light .priority-badge { font-weight: 700; border-radius: 6px; padding: 4px 10px; }
+
+/* Status Badges */
+.light .status-enroute { background: #E6F1FB; color: #185FA5; border: 1px solid #B5D4F4; }
+.light .status-deployed { background: #E1F5EE; color: #0F6E56; border: 1px solid #9FE1CB; }
+.light .status-standby  { background: #F1EFE8; color: #5F5E5A; border: 1px solid #D3D1C7; }
+
+/* Allocation Table */
+.light .allocation-table thead { background: #F8FAFC; }
+.light .allocation-table th {
+  color: #64748B; font-size: 11px; font-weight: 700;
+  letter-spacing: 1px; border-bottom: 1px solid #E2E8EF;
+}
+.light .allocation-table tbody tr { border-bottom: 1px solid #F1F5F9; }
+.light .allocation-table tbody tr:hover { background: #F0F7FF; }
+.light .allocation-table td { color: #1E293B; font-weight: 500; }
+.light .td-id { color: #378ADD !important; font-weight: 600 !important; }
+
+/* Info Window */
+.light .diw-title { color: #0F1E2E; }
+.light .diw-label { color: #64748B; }
+.light .diw-value { color: #1E293B; }
+.light .diw-link  { color: #378ADD; }
+.light .diw-stats { border-top: 1px solid #E2E8EF; }
+

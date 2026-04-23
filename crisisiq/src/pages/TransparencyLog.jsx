@@ -7,6 +7,7 @@ import { useState, useEffect, memo } from 'react';
 import { db } from '../firebase';
 import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
 import { getKeralaZones } from '../utils/dataLoader';
+import { useLanguage } from '../context/LanguageContext';
 import './TransparencyLog.css';
 
 const mockAuditData = [
@@ -75,7 +76,15 @@ const mockAuditData = [
   { id: 'log-12', timestamp: '13:15:05', resourceId: 'ALL-014', action: 'Override', from: 'Depot', to: 'Ernakulam', reason: 'Manual dispatcher', isOverride: true, isBiasFlag: false },
 ];
 
+const actionKeyMap = {
+  "Rerouted": "rerouted",
+  "Deployed": "deployed",
+  "Reallocated": "reallocated",
+  "Override": "override",
+};
+
 function TransparencyLog() {
+  const { t } = useLanguage();
   const [logs, setLogs] = useState(mockAuditData);
   const [showOverrides, setShowOverrides] = useState(false);
   const [showBiasFlags, setShowBiasFlags] = useState(false);
@@ -177,9 +186,9 @@ function TransparencyLog() {
       {/* ── Page Header ── */}
       <div className="tl-header">
         <div className="tl-title-area">
-          <h1 className="tl-title">Transparency Log</h1>
+          <h1 className="tl-title">{t('transparencyLog')}</h1>
           <p className="tl-subtitle">
-            Full audit trail of all system decisions — stored in Google Firebase Firestore
+            {t('transparencyAudit')} — stored in Google Firebase Firestore
           </p>
         </div>
         <div className="tl-header-actions">
@@ -187,7 +196,7 @@ function TransparencyLog() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
             </svg>
-            Filter
+            {t('filter')}
           </button>
           <button className="tl-btn-export" onClick={handleExport} disabled={isExporting}>
             {isExporting ? (
@@ -201,7 +210,7 @@ function TransparencyLog() {
                 <polyline points="10 9 9 9 8 9" />
               </svg>
             )}
-            Export to Google Sheets
+            {t('exportToGoogleSheets')}
           </button>
         </div>
       </div>
@@ -211,15 +220,15 @@ function TransparencyLog() {
         <div className="tl-summary-badges">
           <div className="tl-sum-badge white">
             <span className="sum-val">{logs.length + 1200}</span>
-            <span className="sum-lbl">Total Decisions</span>
+            <span className="sum-lbl">{t('totalDecisions')}</span>
           </div>
           <div className="tl-sum-badge orange">
             <span className="sum-val">{logs.filter(l => l.isOverride).length}</span>
-            <span className="sum-lbl">Human Overrides</span>
+            <span className="sum-lbl">{t('humanOverrides')}</span>
           </div>
           <div className="tl-sum-badge red">
             <span className="sum-val">{logs.filter(l => l.isBiasFlag).length}</span>
-            <span className="sum-lbl">Bias Flags</span>
+            <span className="sum-lbl">{t('biasFlags')}</span>
           </div>
         </div>
 
@@ -231,7 +240,7 @@ function TransparencyLog() {
               onChange={() => { setShowOverrides(!showOverrides); setPage(1); }}
             />
             <span className="chk-mark"></span>
-            Show Overrides Only
+            {t('showOverridesOnly')}
           </label>
           <label className="tl-checkbox">
             <input 
@@ -240,7 +249,7 @@ function TransparencyLog() {
               onChange={() => { setShowBiasFlags(!showBiasFlags); setPage(1); }}
             />
             <span className="chk-mark"></span>
-            Show Bias Flags
+            {t('showBiasFlags')}
           </label>
         </div>
       </div>
@@ -252,7 +261,7 @@ function TransparencyLog() {
             <div className="live-indicator">
               <span className="live-dot pulse"></span>
             </div>
-            <h2>Live Audit Stream</h2>
+            <h2>{t('liveAuditStream')}</h2>
           </div>
         </div>
 
@@ -260,12 +269,12 @@ function TransparencyLog() {
           <table className="tl-table">
             <thead>
               <tr>
-                <th>Timestamp</th>
-                <th>Resource ID</th>
-                <th>Action</th>
-                <th>From → To</th>
-                <th>Reason</th>
-                <th>Flags</th>
+                <th>{t('timestamp')}</th>
+                <th>{t('resourceId')}</th>
+                <th>{t('type')}</th>
+                <th>{t('fromTo')}</th>
+                <th>{t('reason')}</th>
+                <th>{t('flags')}</th>
               </tr>
             </thead>
             <tbody>
@@ -278,7 +287,7 @@ function TransparencyLog() {
                   <tr key={log.id} className={rowClass}>
                     <td className="td-time">{log.timestamp}</td>
                     <td className="td-res">{log.resourceId}</td>
-                    <td><span className={getBadgeClass(log.action)}>{log.action}</span></td>
+                    <td><span className={getBadgeClass(log.action)}>{t(actionKeyMap[log.action] || log.action.toLowerCase())}</span></td>
                     <td className="td-route">
                       {log.from}
                       <span className="tl-arrow">→</span>
@@ -287,8 +296,8 @@ function TransparencyLog() {
                     <td className="td-reason">{log.reason}</td>
                     <td className="td-flags">
                       <div className="flag-container">
-                        {log.isOverride && <span className="pill orange-pill">Human Override</span>}
-                        {log.isBiasFlag && <span className="pill red-pill">⚠ Potential Bias Detected</span>}
+                        {log.isOverride && <span className="pill orange-pill">{t('humanOverride')}</span>}
+                        {log.isBiasFlag && <span className="pill red-pill">⚠ {t('potentialBiasDetected')}</span>}
                       </div>
                     </td>
                   </tr>
@@ -306,7 +315,7 @@ function TransparencyLog() {
         {/* Pagination Footer */}
         <div className="tl-table-footer">
           <span className="tl-showing">
-            Showing {filteredLogs.length > 0 ? ((page - 1) * itemsPerPage) + 1 : 0} to {Math.min(page * itemsPerPage, filteredLogs.length)} of {showOverrides || showBiasFlags ? filteredLogs.length : '1,247'} decisions
+            {t('showing')} {filteredLogs.length > 0 ? ((page - 1) * itemsPerPage) + 1 : 0} {t('to')} {Math.min(page * itemsPerPage, filteredLogs.length)} {t('of')} {showOverrides || showBiasFlags ? filteredLogs.length : '1,247'} {t('decisions')}
           </span>
           <div className="tl-pagination">
             <button 
@@ -314,15 +323,15 @@ function TransparencyLog() {
               disabled={page === 1}
               onClick={() => setPage(p => Math.max(1, p - 1))}
             >
-              Previous
+              {t('previous')}
             </button>
-            <span className="tl-page-counter">Page {page} of {totalPages || 1}</span>
+            <span className="tl-page-counter">Page {page} {t('of')} {totalPages || 1}</span>
             <button 
               className="tl-page-btn" 
               disabled={page === totalPages || totalPages === 0}
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             >
-              Next
+              {t('next')}
             </button>
           </div>
         </div>

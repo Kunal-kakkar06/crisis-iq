@@ -7,6 +7,7 @@ import { useState, useCallback, useMemo, useRef, memo } from 'react';
 import { GoogleMap, useJsApiLoader, HeatmapLayerF, Autocomplete } from '@react-google-maps/api';
 import { darkMapStyle, GOOGLE_MAPS_ID, GOOGLE_MAPS_LIBRARIES } from '../config/googleMaps';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import './CitizenRequests.css';
 
 // ── Mock Data ─────────────────────────────────────────
@@ -32,6 +33,7 @@ const sectorHealth = [
 
 export default memo(function CitizenRequests() {
   const { isDark } = useTheme();
+  const { t } = useLanguage();
   const [requests, setRequests] = useState(initialRequests);
   const [filter, setFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -124,8 +126,8 @@ export default memo(function CitizenRequests() {
           <div className="cr-modal">
             {sosStatus === 'typing' ? (
               <div className="cr-modal-content typing">
-                <h3>Select Location</h3>
-                <p>Provide your exact location for the rescue team.</p>
+                <h3>{t('selectLocation')}</h3>
+                <p>{t('provideExactLocation')}</p>
                 {isLoaded ? (
                   <Autocomplete
                     onLoad={(ac) => (autocompleteRef.current = ac)}
@@ -134,7 +136,7 @@ export default memo(function CitizenRequests() {
                     <input
                       type="text"
                       className="cr-autocomplete-input"
-                      placeholder="Start typing location..."
+                      placeholder={t('startTypingLocation')}
                       value={sosLocation}
                       onChange={(e) => setSosLocation(e.target.value)}
                     />
@@ -143,17 +145,17 @@ export default memo(function CitizenRequests() {
                   <input type="text" className="cr-autocomplete-input" disabled placeholder="Loading map services..." />
                 )}
                 <button className="cr-btn-submit" onClick={submitSosLocation}>
-                  Send Emergency Alert
+                  {t('sendEmergencyAlert')}
                 </button>
                 <button className="cr-btn-cancel" onClick={closeSosModal}>
-                  Cancel
+                  {t('cancel')}
                 </button>
               </div>
             ) : sosStatus === 'loading' ? (
               <div className="cr-modal-content loading">
                 <div className="cr-spinner"></div>
-                <h3>Sending SOS Alert</h3>
-                <p>Pinpointing coordinates for {sosLocation || 'your location'}...</p>
+                <h3>{t('sendingSosAlert')}</h3>
+                <p>{t('pinpointingCoordinates')} {sosLocation || t('yourLocation')}...</p>
               </div>
             ) : (
               <div className="cr-modal-content success">
@@ -162,9 +164,9 @@ export default memo(function CitizenRequests() {
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </div>
-                <h3>SOS Received</h3>
-                <p>Dispatching nearest unit to your location via Google Maps.</p>
-                <button className="cr-btn-close" onClick={closeSosModal}>Acknowledge</button>
+                <h3>{t('sosReceived')}</h3>
+                <p>{t('dispatchingNearestUnit')}</p>
+                <button className="cr-btn-close" onClick={closeSosModal}>{t('acknowledge')}</button>
               </div>
             )}
           </div>
@@ -174,9 +176,9 @@ export default memo(function CitizenRequests() {
       {/* ── Page Header ── */}
       <div className="cr-header">
         <div className="cr-title-area">
-          <h1 className="cr-title">Citizen Requests</h1>
+          <h1 className="cr-title">{t('citizenRequests')}</h1>
           <p className="cr-subtitle">
-            Real-time community assistance requests — powered by&nbsp;
+            {t('realTimeCommunityAssistance')} — powered by&nbsp;
             <span className="cr-google-text">
               <svg width="18" height="18" viewBox="0 0 24 24" style={{ verticalAlign: 'middle', marginRight: '4px' }}>
                 <path fill="#4285F4" d="M12 2L2 7l10 5l10-5l-10-5z" />
@@ -187,7 +189,7 @@ export default memo(function CitizenRequests() {
           </p>
         </div>
         <button className="cr-btn-sos" onClick={handleSosClick}>
-          🚨 SOS — I Need Help
+          {t('sosINeedHelp')}
         </button>
       </div>
 
@@ -202,7 +204,7 @@ export default memo(function CitizenRequests() {
               </svg>
               <input 
                 type="text" 
-                placeholder="Search requests..." 
+                placeholder={t('searchRequests')} 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -214,7 +216,7 @@ export default memo(function CitizenRequests() {
                   className={`cr-filter-btn ${filter === f ? 'active' : ''}`}
                   onClick={() => setFilter(f)}
                 >
-                  {f === 'ALL' ? 'All' : f.charAt(0) + f.slice(1).toLowerCase()}
+                  {t(f.toLowerCase())}
                 </button>
               ))}
             </div>
@@ -222,7 +224,7 @@ export default memo(function CitizenRequests() {
 
           <div className="cr-speech-info">
             <span className="cr-speech-icon">🎙️</span>
-            <span><strong>Voice reports supported</strong> — citizens can submit audio reports in Malayalam, Hindi or English via Google Speech-to-Text.</span>
+            <span><strong>{t('voiceReportsSupported')}</strong> — {t('voiceReportsSubtext')}</span>
           </div>
 
           <div className="cr-requests-list">
@@ -234,7 +236,7 @@ export default memo(function CitizenRequests() {
                     <span className="cr-time">{req.time}</span>
                   </div>
                   <span className={`cr-badge badge-${req.priority.toLowerCase()}`}>
-                    {req.priority}
+                    {t(req.priority.toLowerCase()) || req.priority}
                   </span>
                 </div>
                 
@@ -248,13 +250,13 @@ export default memo(function CitizenRequests() {
 
                 <div className="cr-card-actions">
                   <button className="cr-btn-assign" onClick={() => handleAssignResource(req.location)}>
-                    Assign Resource
+                    {t('assignResource')}
                   </button>
                   <a href={`https://www.google.com/maps/search/?api=1&query=${req.lat},${req.lng}`} target="_blank" rel="noopener noreferrer" className="cr-btn-map">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
                     </svg>
-                    View on Map
+                    {t('viewOnMap')}
                   </a>
                 </div>
               </div>
@@ -270,7 +272,7 @@ export default memo(function CitizenRequests() {
           
           <div className="cr-map-card">
             <div className="cr-map-header">
-              <h3>Request Density Map</h3>
+              <h3>{t('requestDensityMap')}</h3>
               <span className="cr-map-badge">LIVE HEATMAP</span>
             </div>
             
@@ -328,7 +330,7 @@ export default memo(function CitizenRequests() {
           </div>
 
           <div className="cr-health-card">
-            <h3>Sector Health Indicators</h3>
+            <h3>{t('sectorHealthIndicators')}</h3>
             
             <div className="cr-health-list">
               {sectorHealth.map(sector => (
@@ -336,7 +338,7 @@ export default memo(function CitizenRequests() {
                   <div className="cr-hi-top">
                     <span className="cr-hi-name">{sector.name}</span>
                     <span className="cr-hi-stat" style={{ color: sector.color }}>
-                      {sector.stat} ({sector.value}%)
+                      {t(sector.stat.toLowerCase()) || sector.stat} ({sector.value}%)
                     </span>
                   </div>
                   <div className="cr-hi-track">

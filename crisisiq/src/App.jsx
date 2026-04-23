@@ -7,6 +7,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 import Layout from './components/Layout';
 import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
 
 import Dashboard from './pages/Dashboard';
 const ResourceMap = lazy(() => import('./pages/ResourceMap'));
@@ -24,6 +25,7 @@ const SuspenseFallback = () => (
 
 function App() {
   return (
+    <LanguageProvider>
     <ThemeProvider>
       <Router>
         <Layout>
@@ -42,6 +44,7 @@ function App() {
         </Layout>
       </Router>
     </ThemeProvider>
+    </LanguageProvider>
   );
 }
 

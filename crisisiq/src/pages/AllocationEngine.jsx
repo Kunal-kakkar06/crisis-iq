@@ -6,12 +6,14 @@
 import { useState, useEffect, useCallback, useRef, memo } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer
+  Tooltip, Legend, ResponsiveContainer, Area, AreaChart
 } from 'recharts';
 import axios from 'axios';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { getKeralaZones } from '../utils/dataLoader';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import './AllocationEngine.css';
 
 // ── Initial Allocation Data ───────────────────────
@@ -26,6 +28,25 @@ const initialAllocations = [
   { id: 'RES-008', type: 'Police Support',    district: 'Ernakulam',  priority: 22, status: 'STANDBY'   },
 ];
 
+const resourceTypeKeyMap = {
+  "Medical Unit":     "resourceTypes.medicalUnit",
+  "Search & Rescue":  "resourceTypes.searchAndRescue",
+  "Food Supply":      "resourceTypes.foodSupply",
+  "Water Tanker":     "resourceTypes.waterTanker",
+  "Engineering Team": "resourceTypes.engineeringTeam",
+  "Shelter Kit":      "resourceTypes.shelterKit",
+  "Ambulance":        "resourceTypes.ambulance",
+  "Police Support":   "resourceTypes.policeSupport",
+};
+
+const statusKeyMap = {
+  "DEPLOYED": "status.deployed",
+  "STANDBY":  "status.standby",
+  "TRANSIT":  "status.transit",
+  "INACTIVE": "status.inactive",
+  "EN ROUTE": "status.enroute",
+};
+
 // ── Initial Predictive Chart Data ─────────────────
 const baseChartData = [
   { time: 'Now',  current: 78, predicted: 80 },
@@ -39,18 +60,26 @@ const baseChartData = [
 
 // ── Priority Progress Bar Color ───────────────────
 function getPriorityColor(score) {
-  if (score >= 80) return '#FF1744';
-  if (score >= 60) return '#FF6D00';
-  return '#00FF88';
+  if (score >= 80) return '#E24B4A';
+  if (score >= 60) return '#EF9F27';
+  return '#1D9E75';
 }
 
-// ── Status Badge Style ────────────────────────────
-function getStatusStyle(status) {
+// ── Status Badge Style (theme-aware) ─────────────
+function getStatusStyle(status, isDark) {
+  if (isDark) {
+    switch (status) {
+      case 'EN ROUTE':  return { bg: 'rgba(0,212,255,0.12)',   color: '#00D4FF', border: 'rgba(0,212,255,0.3)' };
+      case 'DEPLOYED':  return { bg: 'rgba(0,255,136,0.12)',   color: '#00FF88', border: 'rgba(0,255,136,0.3)' };
+      case 'STANDBY':   return { bg: 'rgba(160,174,192,0.1)',  color: '#A0AEC0', border: 'rgba(160,174,192,0.2)' };
+      default:          return { bg: 'rgba(160,174,192,0.1)',  color: '#A0AEC0', border: 'rgba(160,174,192,0.2)' };
+    }
+  }
   switch (status) {
-    case 'EN ROUTE':  return { bg: 'rgba(0,212,255,0.12)', color: '#00D4FF', border: 'rgba(0,212,255,0.3)' };
-    case 'DEPLOYED':  return { bg: 'rgba(0,255,136,0.12)', color: '#00FF88', border: 'rgba(0,255,136,0.3)' };
-    case 'STANDBY':   return { bg: 'rgba(160,174,192,0.1)', color: '#A0AEC0', border: 'rgba(160,174,192,0.2)' };
-    default:          return { bg: 'rgba(160,174,192,0.1)', color: '#A0AEC0', border: 'rgba(160,174,192,0.2)' };
+    case 'EN ROUTE':  return { bg: '#E6F1FB', color: '#185FA5', border: '#B5D4F4' };
+    case 'DEPLOYED':  return { bg: '#E1F5EE', color: '#0F6E56', border: '#9FE1CB' };
+    case 'STANDBY':   return { bg: '#F1EFE8', color: '#5F5E5A', border: '#D3D1C7' };
+    default:          return { bg: '#F1F5F9', color: '#64748B', border: '#CBD5E1' };
   }
 }
 
@@ -58,10 +87,17 @@ function getStatusStyle(status) {
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="chart-tooltip">
-      <p className="tooltip-label">{label}</p>
+    <div style={{
+      background: '#FFFFFF',
+      border: '1px solid #E2E8EF',
+      borderRadius: '10px',
+      padding: '10px 14px',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
+      fontFamily: 'Inter, sans-serif',
+    }}>
+      <p style={{ fontSize: '13px', fontWeight: 700, color: '#0F1E2E', margin: '0 0 6px 0', paddingBottom: '6px', borderBottom: '1px solid #E2E8EF' }}>{label}</p>
       {payload.map((entry) => (
-        <p key={entry.name} style={{ color: entry.color }}>
+        <p key={entry.name} style={{ color: entry.color, fontSize: '13px', fontWeight: 700, margin: '3px 0' }}>
           {entry.name}: <strong>{entry.value}%</strong>
         </p>
       ))}
@@ -119,6 +155,8 @@ function buildAllocationsFromZones(zones) {
 // Main AllocationEngine Component
 // ===================================================
 function AllocationEngine() {
+  const { isDark } = useTheme();
+  const { t } = useLanguage();
   const [allocations, setAllocations] = useState(initialAllocations);
   const [chartData, setChartData] = useState(baseChartData);
   const [isRunning, setIsRunning] = useState(false);
@@ -200,9 +238,9 @@ function AllocationEngine() {
       {/* ── Page Header ─────────────────────── */}
       <div className="ae-header">
         <div className="ae-header-text">
-          <h1 className="ae-title">Allocation Engine</h1>
+          <h1 className="ae-title">{t('allocationEngine')}</h1>
           <p className="ae-subtitle">
-            AI-driven resource optimisation — powered by&nbsp;
+            {t('autoOptimisationActive')} — powered by&nbsp;
             <span className="ae-google-text">
               <svg width="18" height="18" viewBox="0 0 24 24" style={{ verticalAlign: 'middle', marginRight: '4px' }}>
                 <path fill="#4285F4" d="M12 2L2 7l10 5l10-5l-10-5z" />
@@ -221,14 +259,14 @@ function AllocationEngine() {
           {isRunning ? (
             <>
               <span className="btn-spinner"></span>
-              Running…
+              {t('running')}
             </>
           ) : (
             <>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8 5v14l11-7z"/>
               </svg>
-              Run Allocation
+              {t('runAllocation')}
             </>
           )}
         </button>
@@ -237,63 +275,69 @@ function AllocationEngine() {
       {/* ── 3 Metric Cards ──────────────────── */}
       <div className="ae-metrics-row">
         <div className="ae-metric-card green-glow">
-          <div className="ae-metric-icon" style={{background:'rgba(0,255,136,0.1)', color:'#00FF88'}}>⏱</div>
+          <div className="ae-metric-icon" style={{ background: isDark ? 'rgba(0,255,136,0.1)' : '#E1F5EE', color: isDark ? '#00FF88' : '#0F6E56' }}>⏱</div>
           <div className="ae-metric-body">
-            <span className="ae-metric-label">Response Time</span>
-            <span className="ae-metric-value">4.2 <span className="ae-metric-unit">min avg</span></span>
+            <span className="ae-metric-label">{t('responseTime')}</span>
+            <span className="ae-metric-value">4.2 <span className="ae-metric-unit">{t('minAvg')}</span></span>
             <span className="ae-metric-change positive">
-              ↓ 12% improvement vs baseline
+              ↓ 12% {t('improvementVsBaseline')}
             </span>
           </div>
         </div>
 
         <div className="ae-metric-card orange-glow">
-          <div className="ae-metric-icon" style={{background:'rgba(255,69,0,0.1)', color:'#FF4500'}}>♻</div>
+          <div className="ae-metric-icon" style={{ background: isDark ? 'rgba(255,69,0,0.1)' : '#FAEEDA', color: isDark ? '#FF4500' : '#854F0B' }}>♻</div>
           <div className="ae-metric-body">
-            <span className="ae-metric-label">Resource Waste</span>
+            <span className="ae-metric-label">{t('resourceWaste')}</span>
             <span className="ae-metric-value">7.3<span className="ae-metric-unit">%</span></span>
             <span className="ae-metric-change positive">
-              ↓ 2.1% improvement
+              ↓ 2.1% {t('improved')}
             </span>
           </div>
         </div>
 
         <div className="ae-metric-card cyan-glow">
-          <div className="ae-metric-icon" style={{background:'rgba(0,212,255,0.1)', color:'#00D4FF'}}>⚖</div>
+          <div className="ae-metric-icon" style={{ background: isDark ? 'rgba(0,212,255,0.1)' : '#E6F1FB', color: isDark ? '#00D4FF' : '#185FA5' }}>⚖</div>
           <div className="ae-metric-body">
-            <span className="ae-metric-label">Fairness Score</span>
+            <span className="ae-metric-label">{t('biasScore')}</span>
             <span className="ae-metric-value">0.23</span>
             <span className="ae-metric-change positive">
-              ↑ 0.48 improvement
+              ↑ 0.48 {t('improved')}
             </span>
           </div>
         </div>
       </div>
 
-      {/* ── Predictive Chart ─────────────────── */}
-      <div className="ae-chart-card">
+      {/* ── Predictive Chart ───────────────── */}
+      <div className="ae-chart-card" style={{
+        background: isDark ? '#0D1B2A' : '#FFFFFF',
+        border: `1px solid ${isDark ? 'rgba(0,212,255,0.15)' : '#E2E8EF'}`,
+        borderRadius: '14px',
+        padding: '24px 28px',
+        boxShadow: isDark ? 'none' : '0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
+      }}>
         <div className="ae-chart-header">
           <div>
-            <h2 className="ae-section-title">Predictive Resource Load — Next 6 Hours</h2>
-            <p className="ae-chart-sub">Forecast powered by Google Cloud Vertex AI</p>
+            <h2 className="ae-section-title" style={{ fontSize: '17px', fontWeight: 800, color: isDark ? '#FFFFFF' : '#0F1E2E', letterSpacing: '-0.2px' }}>{t('predictiveResourceLoad')}</h2>
+            <p className="ae-chart-sub" style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>{t('forecastPoweredByVertexAi')}</p>
           </div>
           <div className="ae-chart-legend">
-            <span className="legend-chip cyan">— Current Load</span>
-            <span className="legend-chip orange">--- Predicted</span>
+            <span style={{ background: '#E6F1FB', color: '#185FA5', border: '1px solid #B5D4F4', fontWeight: 700, borderRadius: '6px', padding: '5px 12px', fontSize: '12px' }}>— {t('currentLoad')}</span>
+            <span style={{ background: '#FAEEDA', color: '#854F0B', border: '1px solid #FAC775', fontWeight: 700, borderRadius: '6px', padding: '5px 12px', fontSize: '12px' }}>--- {t('predicted')}</span>
           </div>
         </div>
 
         <ResponsiveContainer width="100%" height={260}>
           <LineChart data={chartData} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+            <CartesianGrid stroke="#E2E8EF" strokeWidth={1} />
             <XAxis
               dataKey="time"
-              tick={{ fill: '#A0AEC0', fontSize: 12 }}
-              axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              tick={{ fill: '#475569', fontSize: 12, fontWeight: 600 }}
+              axisLine={{ stroke: '#E2E8EF' }}
               tickLine={false}
             />
             <YAxis
-              tick={{ fill: '#A0AEC0', fontSize: 12 }}
+              tick={{ fill: '#475569', fontSize: 12, fontWeight: 600 }}
               axisLine={false}
               tickLine={false}
               unit="%"
@@ -304,10 +348,10 @@ function AllocationEngine() {
               type="monotone"
               dataKey="current"
               name="Current Load"
-              stroke="#00D4FF"
+              stroke="#378ADD"
               strokeWidth={2.5}
-              dot={{ fill: '#00D4FF', r: 4 }}
-              activeDot={{ r: 6, fill: '#00D4FF' }}
+              dot={{ fill: '#378ADD', r: 5, stroke: '#FFFFFF', strokeWidth: 2 }}
+              activeDot={{ r: 7, fill: '#378ADD', stroke: '#FFFFFF', strokeWidth: 2 }}
             />
             <Line
               type="monotone"
@@ -326,19 +370,19 @@ function AllocationEngine() {
       {/* ── Allocation Table ─────────────────── */}
       <div className="ae-table-card">
         <div className="ae-table-header">
-          <h2 className="ae-section-title">Resource Allocation</h2>
-          <span className="ae-active-badge">8 Active</span>
+          <h2 className="ae-section-title">{t('resourceAllocation')}</h2>
+          <span className="ae-active-badge">8 {t('active')}</span>
         </div>
 
         <div className="ae-table-wrap">
           <table className="ae-table">
             <thead>
               <tr>
-                <th>Resource ID</th>
-                <th>Type</th>
-                <th>Assigned District</th>
-                <th>Priority Score</th>
-                <th>Status</th>
+                <th>{t('resourceId')}</th>
+                <th>{t('type')}</th>
+                <th>{t('assignedDistrict')}</th>
+                <th>{t('priorityScore')}</th>
+                <th>{t('status')}</th>
               </tr>
             </thead>
             <tbody>
@@ -350,7 +394,7 @@ function AllocationEngine() {
                     <td>
                       <span className="resource-id">{row.id}</span>
                     </td>
-                    <td className="type-cell">{row.type}</td>
+                    <td className="type-cell">{t(resourceTypeKeyMap[row.type] || row.type)}</td>
                     <td className="district-cell">{row.district}</td>
                     <td className="priority-cell">
                       <div className="priority-wrap">
@@ -373,12 +417,12 @@ function AllocationEngine() {
                       <span
                         className="status-badge"
                         style={{
-                          background: statusStyle.bg,
-                          color: statusStyle.color,
-                          border: `1px solid ${statusStyle.border}`,
+                          background: getStatusStyle(row.status, isDark).bg,
+                          color: getStatusStyle(row.status, isDark).color,
+                          border: `1px solid ${getStatusStyle(row.status, isDark).border}`,
                         }}
                       >
-                        {row.status}
+                        {t(statusKeyMap[row.status] || row.status)}
                       </span>
                     </td>
                   </tr>
@@ -394,13 +438,13 @@ function AllocationEngine() {
         <span className="ticker-dot"></span>
         <div className="ticker-track">
           <span className="ticker-text">
-            Auto-optimisation active — next cycle in {countdown} — powered by Google Cloud AI
+            {t('autoOptimisationActive')} — {t('nextCycleIn')} {countdown} — powered by Google Cloud AI
             &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-            Vertex AI model v3.2.1 — last trained 4h ago
+            {t('vertexAiModelInfo')}
             &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-            8 resources monitored across 8 Kerala districts
+            8 {t('resourcesMonitored')} across 8 Kerala {t('activeDistricts').toLowerCase()}
             &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-            Fairness constraint satisfied — bias score 0.23
+            {t('fairnessSummary')} — {t('biasScore').toLowerCase()} 0.23
           </span>
         </div>
       </div>

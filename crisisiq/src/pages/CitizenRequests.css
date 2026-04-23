@@ -622,3 +622,59 @@
 .cr-btn-close:hover {
   background: rgba(255, 255, 255, 0.1);
 }
+
+/* ============================================
+   LIGHT MODE — Citizen Requests
+   ============================================ */
+.light .cr-title { color: #0F1E2E; }
+.light .cr-subtitle { color: #64748B; }
+.light .cr-google-text { color: #1E293B; }
+.light .cr-btn-sos { background: #FCEBEB; border-color: #E24B4A; color: #A32D2D; animation: none; box-shadow: 0 0 0 0 rgba(226,75,74,0); }
+.light .cr-btn-sos:hover { background: #F5D0CF; box-shadow: 0 4px 12px rgba(226,75,74,0.2); }
+.light .cr-search-bar { background: #FFFFFF; border: 1px solid #E2E8EF; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+.light .cr-search-wrapper { background: #F8FAFC; border: 1px solid #E2E8EF; }
+.light .cr-search-icon { color: #94A3B8; }
+.light .cr-search-wrapper input { color: #1E293B; }
+.light .cr-search-wrapper input::placeholder { color: #94A3B8; }
+.light .cr-filter-btn { background: #F8FAFC; color: #64748B; border: 1px solid #E2E8EF; }
+.light .cr-filter-btn:hover { background: #EFF6FF; color: #378ADD; border-color: #B5D4F4; }
+.light .cr-filter-btn.active { background: #E6F1FB; border-color: #378ADD; color: #185FA5; }
+.light .cr-speech-info { background: #EFF6FF; border-left-color: #378ADD; color: #1E293B; }
+.light .cr-card { background: #FFFFFF; border: 1px solid #E2E8EF; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05); }
+.light .cr-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.10); }
+.light .cr-card.critical { border-left-color: #E24B4A; }
+.light .cr-card.high { border-left-color: #EF9F27; }
+.light .cr-card.medium { border-left-color: #FFB800; }
+.light .cr-card.low { border-left-color: #94A3B8; }
+.light .cr-name { color: #0F1E2E; }
+.light .cr-time { color: #94A3B8; }
+.light .badge-critical { background: #FCEBEB; color: #A32D2D; }
+.light .badge-high { background: #FAEEDA; color: #854F0B; }
+.light .badge-medium { background: #EAF3DE; color: #3B6D11; }
+.light .badge-low { background: #F1F5F9; color: #64748B; }
+.light .cr-location { color: #1E293B; }
+.light .cr-message { color: #64748B; border-left-color: #E2E8EF; }
+.light .cr-btn-assign { background: #E6F1FB; border-color: #B5D4F4; color: #185FA5; }
+.light .cr-btn-assign:hover { background: #D0E8FA; box-shadow: 0 4px 12px rgba(55,138,221,0.15); }
+.light .cr-btn-map { background: #F8FAFC; border-color: #E2E8EF; color: #1E293B; }
+.light .cr-btn-map:hover { background: #EFF6FF; }
+.light .cr-empty { background: #F8FAFC; border-color: #E2E8EF; color: #94A3B8; }
+.light .cr-map-card, .light .cr-health-card { background: #FFFFFF; border: 1px solid #E2E8EF; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+.light .cr-map-header h3 { color: #0F1E2E; }
+.light .cr-map-badge { background: #FCEBEB; color: #A32D2D; }
+.light .cr-map-container { border-color: #E2E8EF; }
+.light .cr-health-card h3 { color: #0F1E2E; }
+.light .cr-hi-name { color: #1E293B; }
+.light .cr-hi-track { background: #F1F5F9; }
+.light .cr-toast { background: #FFFFFF; border-color: #9FE1CB; border-left-color: #1D9E75; color: #1E293B; box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
+.light .cr-modal-overlay { background: rgba(15,30,46,0.6); }
+.light .cr-modal { background: #FFFFFF; border: 1px solid #F09595; box-shadow: 0 0 40px rgba(226,75,74,0.15); }
+.light .cr-modal-content h3 { color: #0F1E2E; }
+.light .cr-modal-content p { color: #64748B; }
+.light .cr-autocomplete-input { background: #F8FAFC; border-color: #E2E8EF; color: #1E293B; }
+.light .cr-autocomplete-input:focus { border-color: #378ADD; box-shadow: 0 0 0 3px rgba(55,138,221,0.1); }
+.light .cr-btn-cancel { border-color: #E2E8EF; color: #64748B; }
+.light .cr-btn-cancel:hover { background: #F8FAFC; color: #1E293B; }
+.light .cr-btn-close { background: #F8FAFC; border-color: #E2E8EF; color: #1E293B; }
+.light .cr-btn-close:hover { background: #EFF6FF; }
+.light .cr-success-icon { background: #E1F5EE; color: #0F6E56; }

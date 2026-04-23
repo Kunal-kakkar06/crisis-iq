@@ -494,3 +494,51 @@
   0% { transform: scale(0); opacity: 1; }
   100% { transform: scale(20); opacity: 0; }
 }
+
+/* ============================================
+   LIGHT MODE — Fairness Analytics
+   ============================================ */
+.light .fa-title { color: #0F1E2E; }
+.light .fa-subtitle { color: #64748B; }
+.light .fa-header-action { background: #F8FAFC; border: 1px solid #E2E8EF; }
+.light .fa-toggle-label { color: #1E293B; }
+.light .fa-card { background: #FFFFFF; border: 1px solid #E2E8EF; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05); }
+.light .bias-card h3 { color: #64748B; }
+.light .bias-card.fair { border-color: #9FE1CB; box-shadow: none; }
+.light .bias-card.biased { border-color: #F09595; }
+.light .prev-score { color: #A32D2D; background: #FCEBEB; }
+.light .bias-score-val { text-shadow: none; }
+.light .badge-green { background: #E1F5EE; color: #0F6E56; }
+.light .badge-red { background: #FCEBEB; color: #A32D2D; }
+.light .bias-progress-container { background: #F1F5F9; }
+.light .bias-scale { color: #94A3B8; }
+.light .equity-card { border-color: #B5D4F4; }
+.light .equity-header h3 { color: #64748B; }
+.light .equity-badge { color: #185FA5; background: #E6F1FB; border-color: #B5D4F4; }
+.light .equity-score { color: #185FA5; text-shadow: none; }
+.light .equity-score .percent { color: #94A3B8; }
+.light .eq-pill { background: #F8FAFC; border: 1px solid #E2E8EF; }
+.light .eq-pill-lbl { color: #64748B; }
+.light .chart-card { background: #FFFFFF; border: 1px solid #E2E8EF; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05); }
+.light .chart-header h2 { color: #0F1E2E; }
+.light .fa-tooltip { background: #FFFFFF; border: 1px solid #E2E8EF; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.light .fa-tooltip-label { color: #0F1E2E; border-bottom: 1px solid #E2E8EF; }
+.light .insight-sm-card { background: #FFFFFF; border: 1px solid #E2E8EF; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05); }
+.light .insight-top h4 { color: #1E293B; }
+.light .insight-status-badge.green { background: #E1F5EE; color: #0F6E56; border-color: #9FE1CB; }
+.light .insight-status-badge.red { background: #FCEBEB; color: #A32D2D; border-color: #F09595; }
+.light .insight-status-badge.cyan { background: #E6F1FB; color: #185FA5; border-color: #B5D4F4; }
+.light .insight-desc { color: #64748B; }
+.light .infra-item { border-bottom-color: #E2E8EF; }
+.light .infra-lbl { color: #64748B; }
+.light .infra-val.green { color: #0F6E56; }
+.light .infra-val.amber { color: #854F0B; }
+.light .infra-val.red { color: #A32D2D; }
+.light .drift-stat { background: #F8FAFC; }
+.light .drift-stat .lbl { color: #1E293B; }
+.light .drift-stat .val { color: #185FA5; }
+.light .drift-stat .val small { color: #94A3B8; }
+.light .fa-strip { background: #F8FAFC; border: 1px solid #B5D4F4; border-left: 4px solid #378ADD; }
+.light .strip-title { color: #0F1E2E; }
+.light .strip-item { color: #1E293B; }
+.light .strip-arr { color: #378ADD; }

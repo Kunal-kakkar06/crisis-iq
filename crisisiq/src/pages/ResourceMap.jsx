@@ -22,6 +22,7 @@ import {
 } from '../config/googleMaps';
 import { getKeralaZones } from '../utils/dataLoader';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import './ResourceMap.css';
 
 // ── Generate weighted heatmap points using real severity scores ──
@@ -55,6 +56,7 @@ const HOSPITAL_ICON = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
 
 function ResourceMap() {
   const { isDark } = useTheme();
+  const { t } = useLanguage();
   const [selectedZone, setSelectedZone] = useState(null);
   const [directionsResponse, setDirectionsResponse] = useState(null);
   const [activeType, setActiveType] = useState('All');
@@ -155,14 +157,14 @@ function ResourceMap() {
 
   const renderMap = () => {
     if (loadError) {
-      return <div className="map-error">Error loading Maps API: {loadError.message}</div>;
+      return <div className="map-error">{t('requiresValidApiKey')}: {loadError.message}</div>;
     }
 
     if (!isLoaded) {
       return (
         <div className="map-loading">
           <div className="map-loading-spinner"></div>
-          <span>Initializing Geospatial Systems...</span>
+          <span>{t('loadingTacticalMap')}</span>
         </div>
       );
     }
@@ -277,32 +279,32 @@ function ResourceMap() {
                     border: `1px solid ${selectedZone.color}55`
                   }}
                 >
-                  {selectedZone.severity} — Score: {selectedZone.severityScore?.toFixed(1)}
+                  {t(selectedZone.severity.toLowerCase())} — {t('biasScore')}: {selectedZone.severityScore?.toFixed(1)}
                 </span>
                 <div className="diw-stats">
                   <div className="diw-row">
-                    <span className="diw-label">Fatalities:</span>
+                    <span className="diw-label">{t('totalFatalities')}:</span>
                     <span className="diw-value">{selectedZone.fatalities ?? 'N/A'}</span>
                   </div>
                   <div className="diw-row">
-                    <span className="diw-label">Rainfall excess:</span>
+                    <span className="diw-label">{t('rainfallExcess')}:</span>
                     <span className="diw-value">{selectedZone.rainfallDeviation?.toFixed(0) ?? 'N/A'} mm</span>
                   </div>
                   <div className="diw-row">
-                    <span className="diw-label">Landslides:</span>
+                    <span className="diw-label">{t('landslides')}:</span>
                     <span className="diw-value">{selectedZone.landslides ?? 'N/A'}</span>
                   </div>
                   <div className="diw-row">
-                    <span className="diw-label">Nearest hospital:</span>
+                    <span className="diw-label">{t('nearestHospital')}:</span>
                     <span className="diw-value">{selectedZone.hospitals?.[0]?.name?.slice(0, 28) || 'No data'}</span>
                   </div>
                   <div className="diw-row">
-                    <span className="diw-label">Relief camps:</span>
+                    <span className="diw-label">{t('reliefCamps')}:</span>
                     <span className="diw-value">{selectedZone.reliefCamps ?? 'N/A'}</span>
                   </div>
                 </div>
                 <a className="diw-link" href="#" onClick={(e) => e.preventDefault()}>
-                  View Details →
+                  {t('viewDetails')} →
                 </a>
               </div>
           </InfoWindowF>
@@ -316,34 +318,34 @@ function ResourceMap() {
       {/* ── TOP FILTER BAR ── */}
       <div className="filter-bar">
         <div className="filter-group">
-          <label>Resource Type</label>
+          <label>{t('resourceType')}</label>
           <select value={activeType} onChange={(e) => setActiveType(e.target.value)}>
-            <option>All</option>
-            <option>Ambulance</option>
-            <option>Medical</option>
-            <option>Food</option>
-            <option>Shelter</option>
-            <option>Water</option>
-            <option>Engineering</option>
+            <option value="All">{t('all')}</option>
+            <option value="Ambulance">{t('ambulance')}</option>
+            <option value="Medical">{t('medical')}</option>
+            <option value="Food">{t('food')}</option>
+            <option value="Shelter">{t('shelter')}</option>
+            <option value="Water">{t('water')}</option>
+            <option value="Engineering">{t('engineering')}</option>
           </select>
         </div>
         
         <div className="filter-group">
-          <label>Severity</label>
+          <label>{t('severity')}</label>
           <select value={activeSeverity} onChange={(e) => setActiveSeverity(e.target.value)}>
-            <option>All</option>
-            <option>Critical</option>
-            <option>High</option>
-            <option>Medium</option>
-            <option>Stable</option>
+            <option value="All">{t('all')}</option>
+            <option value="Critical">{t('critical')}</option>
+            <option value="High">{t('high')}</option>
+            <option value="Medium">{t('medium')}</option>
+            <option value="Stable">{t('stable')}</option>
           </select>
         </div>
 
         <div className="filter-group">
-          <label>District</label>
+          <label>{t('district')}</label>
           <select value={activeDistrict} onChange={(e) => setActiveDistrict(e.target.value)}>
-            <option>All</option>
-            {realZones.map(z => <option key={z.id}>{z.name}</option>)}
+            <option value="All">{t('all')}</option>
+            {realZones.map(z => <option key={z.id} value={z.name}>{z.name}</option>)}
           </select>
         </div>
 
@@ -352,7 +354,7 @@ function ResourceMap() {
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                 <path d="M3 3v5h5" />
             </svg>
-            Reset View
+            {t('resetView')}
         </button>
       </div>
 
@@ -373,31 +375,31 @@ function ResourceMap() {
                   <circle cx="12" cy="10" r="3"/>
                 </svg>
                 <span>Ernakulam → Wayanad</span>
-                <span className="eta-time">ETA: {routeEta}</span>
+                <span className="eta-time">{t('previous')}: {routeEta}</span>
               </div>
             )}
                 
             <div className="map-legend">
-                <h4>Map Legend</h4>
+                <h4>{t('mapLegend')}</h4>
                 <div className="legend-item">
                     <span className="legend-dot" style={{background: '#FF1744'}}></span>
-                    Critical Severity
+                    {t('criticalSeverity')}
                 </div>
                 <div className="legend-item">
                     <span className="legend-dot" style={{background: '#FF6D00'}}></span>
-                    High Severity
+                    {t('highSeverity')}
                 </div>
                 <div className="legend-item">
                     <span className="legend-dot" style={{background: '#FFB800'}}></span>
-                    Medium Severity
+                    {t('mediumSeverity')}
                 </div>
                 <div className="legend-item">
                     <span className="legend-dot" style={{background: '#00FF88'}}></span>
-                    Stable Area
+                    {t('stableArea')}
                 </div>
                 <div className="legend-item legend-line">
                     <span className="legend-route"></span>
-                    Resource Route
+                    {t('resourceRoute')}
                 </div>
             </div>
         </div>
@@ -405,10 +407,10 @@ function ResourceMap() {
         {/* ── RIGHT PANEL: ZONE LIST ── */}
         <div className="zone-list-panel">
             <div className="panel-header">
-                <h2>Zone Status</h2>
+                <h2>{t('zoneStatus')}</h2>
                 <div className="live-indicator">
                     <span className="live-dot"></span>
-                    LIVE
+                    {t('live')}
                 </div>
             </div>
             
@@ -422,16 +424,16 @@ function ResourceMap() {
                         <div className="zone-item-top">
                             <span className="zone-item-name">{zone.name}</span>
                             <span className={`zone-item-badge ${getSeverityClass(zone.severity)}`}>
-                                {zone.severity}
+                                {t(zone.severity.toLowerCase())}
                             </span>
                         </div>
                         
                         <div className="zone-item-stats">
-                            <span className="res-count">{zone.resources} res</span>
-                            <span className="res-need">/ {zone.need} needed</span>
+                            <span className="res-count">{zone.resources} {t('units').toLowerCase()}</span>
+                            <span className="res-need">/ {zone.need} {t('assignedDistrict').toLowerCase()}</span>
                         </div>
                         <div style={{ fontSize: '11px', color: '#4a6380', marginTop: '2px' }}>
-                            Score: {zone.severityScore?.toFixed(1)} | ⚡ {zone.fatalities} fatalities
+                            {t('biasScore')}: {zone.severityScore?.toFixed(1)} | ⚡ {zone.fatalities} {t('totalFatalities').toLowerCase()}
                         </div>
                         
                         <div className="zone-progress-track">

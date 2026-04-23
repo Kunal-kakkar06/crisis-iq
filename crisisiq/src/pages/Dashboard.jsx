@@ -11,6 +11,7 @@ import { db } from '../firebase';
 import { collection, onSnapshot, query, orderBy, limit, doc } from 'firebase/firestore';
 import { darkMapStyle, keralaZones as staticKeralaZones, GOOGLE_MAPS_ID } from '../config/googleMaps';
 import { getKeralaZones, getNationalStats, isUsingFallback } from '../utils/dataLoader';
+import { useLanguage } from '../context/LanguageContext';
 import './Dashboard.css';
 
 // ── Count-Up Animation Hook ───────────────────
@@ -29,9 +30,10 @@ function useCountUp(target, duration = 2000, decimals = 0) {
       const current = eased * target;
 
       if (progress >= 1) {
-        setCount(target);
+        setCount(target || 0);
       } else {
-        setCount(parseFloat(current.toFixed(decimals)));
+        const val = eased * (target || 0);
+        setCount(parseFloat(val.toFixed(decimals)));
         animationFrame = requestAnimationFrame(step);
       }
     };
@@ -73,6 +75,39 @@ const mockCitizenRequests = [
   { id: '3', name: 'Priya Nair', priority: 'MEDIUM', location: 'Thrissur — Chalakudy', time: '14 min ago', type: 'Food & Water' },
 ];
 
+// ── Translation Key Maps ───────────────────────
+const resourceTypeKeyMap = {
+  "Medical Unit":     "resourceTypes.medicalUnit",
+  "Search & Rescue":  "resourceTypes.searchAndRescue",
+  "Food Supply":      "resourceTypes.foodSupply",
+  "Water Tanker":     "resourceTypes.waterTanker",
+  "Water Purifier":   "resourceTypes.waterTanker", // Mapping similar items
+  "Engineering Team": "resourceTypes.engineeringTeam",
+  "Shelter Kit":      "resourceTypes.shelterKit",
+  "Ambulance":        "resourceTypes.ambulance",
+  "Police Support":   "resourceTypes.policeSupport",
+  "Rescue Boat":      "resourceTypes.searchAndRescue",
+  "Generator":        "resourceTypes.engineeringTeam",
+};
+
+const statusKeyMap = {
+  "DEPLOYED": "status.deployed",
+  "STANDBY":  "status.standby",
+  "TRANSIT":  "status.transit",
+  "INACTIVE": "status.inactive",
+  "EN ROUTE": "status.enroute",
+};
+
+const auditActionKeyMap = {
+  "Resource reallocation triggered": "audit.resourceReallocationTriggered",
+  "Bias check passed":               "audit.biasCheckPassed",
+  "Priority escalation approved":    "audit.priorityEscalationApproved",
+  "Supply drop confirmed":           "audit.supplyDropConfirmed",
+  "Citizen request fulfilled":       "audit.citizenRequestFulfilled",
+  "New zone activated":              "audit.newZoneActivated",
+  "Route optimized by AI":           "audit.routeOptimizedByAi",
+};
+
 // ── Stat Card Component ───────────────────────
 function StatCard({ icon, label, value, decimals, suffix, change, glowColor }) {
   const animatedValue = useCountUp(value, 2200, decimals);
@@ -106,6 +141,7 @@ function StatCard({ icon, label, value, decimals, suffix, change, glowColor }) {
 
 // ── Main Dashboard Component ──────────────────
 function Dashboard() {
+  const { t } = useLanguage();
   const [selectedZone, setSelectedZone] = useState(null);
   const [auditLogs, setAuditLogs] = useState(mockAuditLogs);
   const [citizenRequests, setCitizenRequests] = useState(mockCitizenRequests);
@@ -333,24 +369,24 @@ function Dashboard() {
                 </span>
                 <div className="diw-stats">
                   <div className="diw-row">
-                    <span className="diw-label">Resources:</span>
-                    <span className="diw-value">{selectedZone.resources} available</span>
+                    <span className="diw-label">{t('available')}:</span>
+                    <span className="diw-value">{selectedZone.resources || 0} {t('units')}</span>
                   </div>
                   <div className="diw-row">
-                    <span className="diw-label">Affected:</span>
-                    <span className="diw-value">{selectedZone.affected?.toLocaleString() || selectedZone.population?.toLocaleString()} people</span>
+                    <span className="diw-label">{t('people')}:</span>
+                    <span className="diw-value">{(selectedZone.affected || selectedZone.population || 0).toLocaleString()}</span>
                   </div>
                   <div className="diw-row">
-                    <span className="diw-label">Severity Score:</span>
-                    <span className="diw-value">{selectedZone.severityScore?.toFixed(1) || (selectedZone.score * 10).toFixed(1)} / 100</span>
+                    <span className="diw-label">{t('biasScore')}:</span>
+                    <span className="diw-value">{(selectedZone.severityScore || 0).toFixed(1)} / 100</span>
                   </div>
                   <div className="diw-row">
-                    <span className="diw-label">Last updated:</span>
-                    <span className="diw-value">{selectedZone.lastUpdated}</span>
+                    <span className="diw-label">{t('recent')}:</span>
+                    <span className="diw-value">{selectedZone.lastUpdated || '—'}</span>
                   </div>
                 </div>
                 <a className="diw-link" href="#" onClick={(e) => e.preventDefault()}>
-                  View Details →
+                  {t('viewDetails')} →
                 </a>
               </div>
             </InfoWindowF>
@@ -400,10 +436,10 @@ function Dashboard() {
               <line x1="12" y1="22.08" x2="12" y2="12" />
             </svg>
           }
-          label="Total Fatalities"
+          label={t('totalFatalities')}
           value={realStats ? realStats.totalFatalities : stats.total_resources}
           decimals={0}
-          change={realStats ? `Most affected: ${realStats.mostAffectedDistrict}` : '+12.3% vs last hour'}
+          change={realStats ? `${t('mostAffected')}: ${realStats.mostAffectedDistrict}` : `+12.3% ${t('vsLastHour')}`}
           glowColor="#FF1744"
         />
         <StatCard
@@ -413,10 +449,10 @@ function Dashboard() {
               <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
           }
-          label="Houses Affected"
+          label={t('housesAffected')}
           value={realStats ? realStats.totalHousesAffected : 8926}
           decimals={0}
-          change="Kerala 2018 flood data"
+          change={t('floodData')}
           glowColor="#FF4500"
         />
         <StatCard
@@ -428,10 +464,10 @@ function Dashboard() {
               <circle cx="19" cy="14" r="2" />
             </svg>
           }
-          label="Bias Score"
+          label={t('biasScore')}
           value={stats.bias_score}
           decimals={2}
-          change="-67.6% improved"
+          change={`-67.6% ${t('improved')}`}
           glowColor="#00FF88"
         />
         <StatCard
@@ -440,10 +476,10 @@ function Dashboard() {
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.59 4.4 2 2 0 0 1 3.55 2h3a2 2 0 0 1 2 1.72" />
             </svg>
           }
-          label="Relief Camps"
+          label={t('reliefCamps')}
           value={realStats ? realStats.totalReliefCamps : stats.pending_requests}
           decimals={0}
-          change="Active across all districts"
+          change={t('activeDistricts')}
           glowColor="#FFB800"
         />
         <StatCard
@@ -453,17 +489,17 @@ function Dashboard() {
               <polyline points="17 6 23 6 23 12" />
             </svg>
           }
-          label="Estimated Impact"
+          label={t('estimatedImpact')}
           value={stats.estimated_impact}
           decimals={1}
           suffix="%"
-          change="+3.1% efficiency"
+          change={`+3.1% ${t('efficiency')}`}
           glowColor="#00D4FF"
         />
       </div>
       {/* Data source attribution */}
       <div style={{ textAlign: 'center', color: '#4a6380', fontSize: '11px', marginTop: '-8px', marginBottom: '4px' }}>
-        Data source: Kerala 2018 Flood Data + India Hospital Directory
+        {t('dataSource')}
         {isUsingFallback() && <span style={{ color: '#FFB800', marginLeft: '8px' }}>⚠ Using cached data — CSV files not found in /data folder</span>}
       </div>
 
@@ -473,16 +509,11 @@ function Dashboard() {
         <div className="panel-tactical">
           <div className="panel-header">
             <h2>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="2" y1="12" x2="22" y2="12" />
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-              </svg>
-              Tactical Overview — Kerala
+              {t('tacticalOverview')}
             </h2>
             <div className="live-indicator">
               <span className="live-dot"></span>
-              LIVE
+              {t('live')}
             </div>
           </div>
 
@@ -495,12 +526,10 @@ function Dashboard() {
 
           <button className="btn-expand" id="btn-expand-tactical">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 3 21 3 21 9" />
-              <polyline points="9 21 3 21 3 15" />
               <line x1="21" y1="3" x2="14" y2="10" />
               <line x1="3" y1="21" x2="10" y2="14" />
             </svg>
-            Expand Tactical View
+            {t('expandTacticalView')}
           </button>
         </div>
 
@@ -514,7 +543,7 @@ function Dashboard() {
                 <path d="M12 3v18" /><path d="M5 6l7-3 7 3" /><path d="M2 12h4l1-4 1 4H2z" /><path d="M16 12h4l1-4 1 4h-6z" />
                 <circle cx="4" cy="14" r="2" /><circle cx="20" cy="14" r="2" />
               </svg>
-              <h3>Fairness Summary</h3>
+              <h3>{t('fairnessSummary')}</h3>
             </div>
             <div className="ai-google-badge" title="AI optimized by Google Cloud Vertex AI">
               <span className="google-letter g-blue">G</span>
@@ -529,14 +558,14 @@ function Dashboard() {
 
             <div className="fairness-bars">
               <div className="fairness-row">
-                <span className="fairness-label">Before Allocation</span>
+                <span className="fairness-label">{t('beforeAllocation')}</span>
                 <div className="fairness-bar-track">
                   <div className="fairness-bar-fill fairness-bar-before" style={{ width: '71%' }}></div>
                 </div>
                 <span className="fairness-score fairness-score-bad">0.71</span>
               </div>
               <div className="fairness-row">
-                <span className="fairness-label">After Allocation</span>
+                <span className="fairness-label">{t('afterAllocation')}</span>
                 <div className="fairness-bar-track">
                   <div className="fairness-bar-fill fairness-bar-after" style={{ width: '23%' }}></div>
                 </div>
@@ -544,10 +573,16 @@ function Dashboard() {
               </div>
             </div>
             <div className="fairness-result">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00FF88" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              Bias reduced by <strong>67.6%</strong>
+              <span style={{
+                width: '22px', height: '22px', borderRadius: '50%',
+                background: '#E1F5EE', display: 'inline-flex',
+                alignItems: 'center', justifyContent: 'center', flexShrink: 0
+              }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" strokeWidth="3">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </span>
+              {t('biasReducedBy')} <strong>67.6%</strong>
             </div>
           </div>
 
@@ -555,15 +590,11 @@ function Dashboard() {
           <div className="crisis-card panel-audit">
             <div className="panel-header">
               <h2>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4500" strokeWidth="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                </svg>
-                Transparency Audit
+                {t('transparencyAudit')}
               </h2>
               <div className="live-indicator">
                 <span className="live-dot"></span>
-                LIVE
+                {t('live')}
               </div>
             </div>
 
@@ -572,7 +603,7 @@ function Dashboard() {
                 <div key={log.id || idx} className="audit-item" style={{ animationDelay: `${idx * 0.08}s` }}>
                   <span className="audit-icon">{getAuditIcon(log.type)}</span>
                   <div className="audit-content">
-                    <span className="audit-action">{log.action}</span>
+                    <span className="audit-action">{t(auditActionKeyMap[log.action] || log.actionKey || log.action)}</span>
                     <span className="audit-zone">{log.zone}</span>
                   </div>
                   <span className="audit-time">{log.timestamp}</span>
@@ -585,13 +616,9 @@ function Dashboard() {
           <div className="crisis-card panel-citizen">
             <div className="panel-header">
               <h2>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFB800" strokeWidth="2">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                </svg>
-                Citizen Requests
+                {t('citizenRequests')}
               </h2>
-              <span className="panel-count">{citizenRequests.length} recent</span>
+              <span className="panel-count">{citizenRequests.length} {t('recent')}</span>
             </div>
 
             <div className="citizen-feed">
@@ -611,7 +638,7 @@ function Dashboard() {
                   </div>
                   <div className="citizen-meta">
                     <span className={`priority-badge ${getPriorityClass(req.priority)}`}>
-                      {req.priority}
+                      {t(req.priority.toLowerCase()) || req.priority}
                     </span>
                     <span className="citizen-time">{req.time}</span>
                   </div>
@@ -631,11 +658,11 @@ function Dashboard() {
               <path d="M16 8h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2" />
               <line x1="8" y1="12" x2="8" y2="12" />
             </svg>
-            Live Allocation Feed
+            {t('liveAuditStream')}
           </h2>
           <div className="live-indicator">
             <span className="live-dot"></span>
-            LIVE
+            {t('live')}
           </div>
         </div>
 
@@ -643,27 +670,27 @@ function Dashboard() {
           <table className="allocation-table">
             <thead>
               <tr>
-                <th>Resource ID</th>
-                <th>Type</th>
-                <th>District</th>
-                <th>Priority</th>
-                <th>Status</th>
+                <th>{t('resourceId')}</th>
+                <th>{t('type')}</th>
+                <th>{t('district')}</th>
+                <th>{t('severity')}</th>
+                <th>{t('status')}</th>
               </tr>
             </thead>
             <tbody>
               {allocationData.map((row, idx) => (
                 <tr key={row.id} style={{ animationDelay: `${idx * 0.06}s` }}>
                   <td className="td-id">{row.id}</td>
-                  <td>{row.type}</td>
+                  <td>{t(resourceTypeKeyMap[row.type] || row.type)}</td>
                   <td>{row.district}</td>
                   <td>
                     <span className={`priority-badge ${getPriorityClass(row.priority)}`}>
-                      {row.priority}
+                      {t(row.priority.toLowerCase()) || row.priority}
                     </span>
                   </td>
                   <td>
                     <span className={`status-badge ${getStatusClass(row.status)}`}>
-                      {row.status}
+                      {t(statusKeyMap[row.status] || row.status)}
                     </span>
                   </td>
                 </tr>

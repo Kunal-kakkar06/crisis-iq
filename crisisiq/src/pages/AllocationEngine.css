@@ -455,3 +455,41 @@
   from { opacity: 0; transform: translateY(20px) scale(0.95); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* ============================================
+   LIGHT MODE — Allocation Engine
+   ============================================ */
+.light .ae-title { color: #0F1E2E; }
+.light .ae-subtitle { color: #64748B; }
+.light .btn-run-allocation { background: #E6F1FB; border-color: #378ADD; color: #185FA5; }
+.light .btn-run-allocation:hover:not(:disabled) { background: #D0E8FA; box-shadow: 0 4px 16px rgba(55,138,221,0.2); }
+.light .ae-metric-card { background: #FFFFFF; border: 1px solid #E2E8EF; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05); }
+.light .ae-metric-card.green-glow { border-color: #9FE1CB; }
+.light .ae-metric-card.orange-glow { border-color: #FAC775; }
+.light .ae-metric-card.cyan-glow { border-color: #B5D4F4; }
+.light .ae-metric-label { color: #64748B; }
+.light .ae-metric-value { color: #0F1E2E; }
+.light .ae-metric-unit { color: #94A3B8; }
+.light .ae-metric-change.positive { color: #0F6E56; }
+.light .ae-chart-card { background: #FFFFFF; border: 1px solid #E2E8EF; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05); }
+.light .ae-section-title { color: #0F1E2E; }
+.light .ae-chart-sub { color: #64748B; }
+.light .legend-chip.cyan { background: #E6F1FB; color: #185FA5; border-color: #B5D4F4; }
+.light .legend-chip.orange { background: #FAEEDA; color: #854F0B; border-color: #FAC775; }
+.light .chart-tooltip { background: #FFFFFF; border: 1px solid #E2E8EF; color: #1E293B; }
+.light .tooltip-label { color: #64748B; }
+.light .ae-table-card { background: #FFFFFF; border: 1px solid #E2E8EF; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05); }
+.light .ae-table-header { border-bottom: 1px solid #F1F5F9; }
+.light .ae-active-badge { background: #E1F5EE; color: #0F6E56; border-color: #9FE1CB; }
+.light .ae-table th { background: #F8FAFC; color: #64748B; border-bottom: 1px solid #E2E8EF; }
+.light .ae-table td { color: #1E293B; border-bottom: 1px solid #F1F5F9; }
+.light .ae-table tr:hover td { background: #F0F7FF; }
+.light .resource-id { color: #378ADD; }
+.light .type-cell { color: #64748B; }
+.light .district-cell { color: #0F1E2E; }
+.light .priority-track { background: #F1F5F9; }
+.light .ae-ticker { background: #F8FAFC; border: 1px solid #E2E8EF; }
+.light .ticker-text { color: #64748B; }
+.light .ticker-dot { background: #1D9E75; box-shadow: none; }
+.light .allocation-toast { background: #FFFFFF; border: 1px solid #9FE1CB; color: #1E293B; box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
+.light .toast-icon { background: #E1F5EE; color: #0F6E56; }

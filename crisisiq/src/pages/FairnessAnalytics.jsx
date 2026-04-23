@@ -9,6 +9,8 @@ import {
   Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ZAxis
 } from 'recharts';
 import { getKeralaZones, getNationalStats } from '../utils/dataLoader';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import './FairnessAnalytics.css';
 
 // ── Data: Bias Reduction Chart (Before/After) ────
@@ -46,10 +48,17 @@ const scatterData = [
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="fa-tooltip">
-      <p className="fa-tooltip-label">{label}</p>
+    <div style={{
+      background: '#FFFFFF',
+      border: '1px solid #E2E8EF',
+      borderRadius: '10px',
+      padding: '10px 14px',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
+      fontFamily: 'Inter, sans-serif',
+    }}>
+      <p style={{ fontSize: '13px', fontWeight: 700, color: '#0F1E2E', marginBottom: '6px', paddingBottom: '6px', borderBottom: '1px solid #E2E8EF', margin: '0 0 6px 0' }}>{label}</p>
       {payload.map((entry) => (
-        <p key={entry.name} style={{ color: entry.fill }}>
+        <p key={entry.name} style={{ color: entry.fill, fontSize: '13px', fontWeight: 700, margin: '3px 0' }}>
           {entry.name}: <strong>{entry.value}</strong>
         </p>
       ))}
@@ -58,6 +67,8 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 function FairnessAnalytics() {
+  const { isDark } = useTheme();
+  const { t } = useLanguage();
   const [fairEnabled, setFairEnabled] = useState(false);
   const [biasScore, setBiasScore] = useState(0.71);
   const [chartData, setChartData] = useState([]);
@@ -120,9 +131,9 @@ function FairnessAnalytics() {
       {/* ── Page Header ─────────────────────── */}
       <div className="fa-header">
         <div className="fa-header-text">
-          <h1 className="fa-title">Fairness Analytics</h1>
+          <h1 className="fa-title">{t('fairnessAnalytics')}</h1>
           <p className="fa-subtitle">
-            Bias detection and equitable resource distribution — powered by&nbsp;
+            {t('enableFairAllocation')} — powered by&nbsp;
             <span className="fa-google-text">
               <svg width="18" height="18" viewBox="0 0 24 24" style={{ verticalAlign: 'middle', marginRight: '4px' }}>
                 <path fill="#4285F4" d="M12 2L2 7l10 5l10-5l-10-5z" />
@@ -135,7 +146,7 @@ function FairnessAnalytics() {
         </div>
 
         <div className="fa-header-action">
-          <span className="fa-toggle-label">Enable Fair Allocation</span>
+          <span className="fa-toggle-label">{t('fairnessOn')}</span>
           <button 
             className={`fa-toggle-btn ${fairEnabled ? 'active' : ''}`}
             onClick={() => setFairEnabled(!fairEnabled)}
@@ -155,16 +166,16 @@ function FairnessAnalytics() {
           {particles && <div className="particles-burst"></div>}
           
           <div className="bias-card-header">
-            <h3>System Bias Score</h3>
-            <span className="prev-score">Previous: 0.71 (High Bias)</span>
+            <h3>{t('systemBiasScore')}</h3>
+            <span className="prev-score">{t('previousScore')}: 0.71 ({t('highBias')})</span>
           </div>
 
           <div className="bias-score-wrap">
-            <span className="bias-score-val" style={{ color: fairEnabled ? '#00FF88' : '#FF1744' }}>
+            <span className="bias-score-val" style={{ color: fairEnabled ? (isDark ? '#00FF88' : '#1D9E75') : (isDark ? '#FF1744' : '#E24B4A') }}>
               {biasScore.toFixed(2)}
             </span>
             <div className={`bias-badge ${fairEnabled ? 'badge-green' : 'badge-red'}`}>
-              {fairEnabled ? 'Low bias — within acceptable range' : 'High bias — action required'}
+              {fairEnabled ? `${t('lowBias')} — ${t('withinAcceptableRange')}` : `${t('highBias')} — ${t('actionRequired')}`}
             </div>
           </div>
 
@@ -173,21 +184,22 @@ function FairnessAnalytics() {
               className="bias-progress-fill"
               style={{
                 width: `${(biasScore / 1.0) * 100}%`,
-                background: fairEnabled ? '#00FF88' : '#FF1744'
+                background: fairEnabled ? '#1D9E75' : '#E24B4A',
+                borderRadius: '3px',
               }}
             ></div>
           </div>
           <div className="bias-scale">
-            <span>0.0 (Fair)</span>
-            <span>1.0 (Biased)</span>
+            <span>0.0 ({t('fair')})</span>
+            <span>1.0 ({t('biased')})</span>
           </div>
         </div>
 
         {/* Distribution Equity Card — real BPL data */}
         <div className="fa-card equity-card">
           <div className="equity-header">
-            <h3>Distribution Equity</h3>
-            <span className="equity-badge">Kerala BPL 2011 Data</span>
+            <h3>{t('distributionEquity')}</h3>
+            <span className="equity-badge">{t('keralaBplDataInfo')}</span>
           </div>
           
           <div className="equity-score">94.2<span className="percent">%</span></div>
@@ -195,34 +207,44 @@ function FairnessAnalytics() {
           <div className="equity-pills">
             <div className="eq-pill urban">
               <span className="eq-pill-val">{bplData.urban.toFixed(1)}%</span>
-              <span className="eq-pill-lbl">URBAN BPL</span>
+              <span className="eq-pill-lbl">{t('urbanBpl')}</span>
             </div>
             <div className="eq-pill rural">
               <span className="eq-pill-val">{bplData.rural.toFixed(1)}%</span>
-              <span className="eq-pill-lbl">RURAL BPL</span>
+              <span className="eq-pill-lbl">{t('ruralBpl')}</span>
             </div>
             <div className="eq-pill suburban">
               <span className="eq-pill-val">7.1%</span>
-              <span className="eq-pill-lbl">COMBINED</span>
+              <span className="eq-pill-lbl">{t('combined')}</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* ── Bias Reduction Chart ──────────────── */}
-      <div className="fa-card chart-card">
+      <div className="fa-card chart-card" style={{
+        background: isDark ? '#0D1B2A' : '#FFFFFF',
+        border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : '#E2E8EF'}`,
+        borderRadius: '14px',
+        padding: '24px 28px',
+        boxShadow: isDark ? 'none' : '0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
+      }}>
         <div className="chart-header">
-          <h2>Bias Reduction — Before vs After Fair Allocation</h2>
+          <h2 style={{ fontSize: '17px', fontWeight: 800, color: isDark ? '#FFFFFF' : '#0F1E2E', letterSpacing: '-0.2px', margin: '0 0 4px 0' }}>{t('biasReductionTitle')}</h2>
+        </div>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', marginTop: '12px' }}>
+          <span style={{ background: '#FCEBEB', color: '#A32D2D', border: '1px solid #F09595', fontWeight: 700, borderRadius: '6px', padding: '5px 12px', fontSize: '12px' }}>{t('beforeAllocation')} ({t('highBias')})</span>
+          <span style={{ background: '#E1F5EE', color: '#0F6E56', border: '1px solid #9FE1CB', fontWeight: 700, borderRadius: '6px', padding: '5px 12px', fontSize: '12px' }}>{t('afterAllocation')} ({t('fair')})</span>
         </div>
         <ResponsiveContainer width="100%" height={320}>
           <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={true} vertical={false} />
-            <XAxis type="number" tick={{ fill: '#A0AEC0', fontSize: 12 }} axisLine={{stroke:'rgba(255,255,255,0.1)'}} tickLine={false} />
-            <YAxis dataKey="district" type="category" width={90} tick={{ fill: '#E2E8F0', fontSize: 12, fontWeight: 500 }} axisLine={false} tickLine={false} />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
-            <Legend wrapperStyle={{ paddingTop: '10px', fontSize: '13px' }} />
-            <Bar dataKey="before" name="Before (High Bias)" fill="#FF1744" radius={[0,4,4,0]} barSize={12} animationDuration={1200} />
-            <Bar dataKey="after" name="After (Fair Allocation)" fill="#00FF88" radius={[0,4,4,0]} barSize={12} animationDuration={1200} />
+            <CartesianGrid stroke="#E2E8EF" strokeWidth={1} horizontal={true} vertical={false} />
+            <XAxis type="number" tick={{ fill: '#475569', fontSize: 12, fontWeight: 600 }} axisLine={{ stroke: '#E2E8EF' }} tickLine={false} />
+            <YAxis dataKey="district" type="category" width={95} tick={{ fill: isDark ? '#E2E8F0' : '#1E293B', fontSize: 13, fontWeight: 700 }} axisLine={false} tickLine={false} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(55,138,221,0.04)' }} />
+            <Legend wrapperStyle={{ display: 'none' }} />
+            <Bar dataKey="before" name="Before (High Bias)" fill="#E24B4A" radius={[0,4,4,0]} barSize={14} animationDuration={1200} />
+            <Bar dataKey="after" name="After (Fair Allocation)" fill="#1D9E75" radius={[0,4,4,0]} barSize={14} animationDuration={1200} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -232,8 +254,8 @@ function FairnessAnalytics() {
         
         <div className="fa-card insight-sm-card">
           <div className="insight-top">
-            <h4>Population Density vs Resources</h4>
-            <span className="insight-status-badge green">Optimal balance achieved</span>
+            <h4>{t('populationDensityVsResources')}</h4>
+            <span className="insight-status-badge green">{t('optimalBalanceAchieved')}</span>
           </div>
           <div className="insight-chart-mini">
             <ResponsiveContainer width="100%" height={80}>
@@ -241,7 +263,7 @@ function FairnessAnalytics() {
                 <XAxis type="number" dataKey="x" hide />
                 <YAxis type="number" dataKey="y" hide />
                 <ZAxis type="number" dataKey="z" range={[20, 200]} />
-                <Scatter data={scatterData} fill="#00D4FF" />
+                <Scatter data={scatterData} fill="#378ADD" />
               </ScatterChart>
             </ResponsiveContainer>
           </div>
@@ -250,8 +272,8 @@ function FairnessAnalytics() {
 
         <div className="fa-card insight-sm-card">
           <div className="insight-top">
-            <h4>Infrastructure Access</h4>
-            <span className="insight-status-badge red">-2.6 min rural penalty — being addressed</span>
+            <h4>{t('infrastructureAccess')}</h4>
+            <span className="insight-status-badge red">{t('ruralPenaltyNote')}</span>
           </div>
           <div className="infra-list">
             <div className="infra-item">
@@ -263,28 +285,28 @@ function FairnessAnalytics() {
               <span className="infra-val amber">⚠ Fair</span>
             </div>
             <div className="infra-item">
-              <span className="infra-lbl">Districts 6-8</span>
-              <span className="infra-val red">● Limited</span>
+              <span className="infra-lbl">{t('districts6to8')}</span>
+              <span className="infra-val red">● {t('limited')}</span>
             </div>
           </div>
         </div>
 
         <div className="fa-card insight-sm-card">
           <div className="insight-top">
-            <h4>Response Time Drift</h4>
-            <span className="insight-status-badge cyan">Real-time tracking</span>
+            <h4>{t('responseTimeDrift')}</h4>
+            <span className="insight-status-badge cyan">{t('realTimeTracking')}</span>
           </div>
           <div className="drift-metrics">
             <div className="drift-stat">
-              <span className="lbl">Urban</span>
+              <span className="lbl">{t('urban')}</span>
               <span className="val">3.2<small>m</small></span>
             </div>
             <div className="drift-stat">
-              <span className="lbl">Rural</span>
+              <span className="lbl">{t('rural')}</span>
               <span className="val">5.8<small>m</small></span>
             </div>
             <div className="drift-stat">
-              <span className="lbl">Suburban</span>
+              <span className="lbl">{t('suburban')}</span>
               <span className="val">4.1<small>m</small></span>
             </div>
           </div>
@@ -294,11 +316,11 @@ function FairnessAnalytics() {
 
       {/* ── System Insights Strip ─────────────── */}
       <div className="fa-strip">
-        <div className="strip-title">AI Natural Language Insights</div>
+        <div className="strip-title">{t('aiNaturalLanguageInsights')}</div>
         <div className="strip-items">
           <div className="strip-item">
             <span className="strip-arr">→</span>
-            Resources reallocated to underserved areas
+            {t('resourcesReallocatedToUnderservedAreas')}
           </div>
           <div className="strip-item">
             <span className="strip-arr">→</span>
