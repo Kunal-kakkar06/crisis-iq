@@ -4,7 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 
 export default function SettingsPanel({ onClose }) {
   const { language, setLanguage, t, currentLang, LANGUAGES } = useLanguage();
-  const { isDark } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
   const [view, setView] = useState('main'); // 'main' | 'language'
 
   const bg = isDark ? '#0D1B2A' : '#FFFFFF';
@@ -47,12 +47,58 @@ export default function SettingsPanel({ onClose }) {
         </div>
         <div style={{ overflowY:'auto', maxHeight:'calc(80vh - 60px)' }}>
           {sectionLabel(t('general'))}
-          {row('🔔', t('notifications'), null, ()=>{})}
-          {row('🎨', t('theme'), isDark ? '🌙' : '☀️', ()=>{})}
+          {row('🔔', t('notifications'), null, () => setView('notifications'))}
+          {row('🎨', t('theme'), isDark ? '🌙' : '☀️', toggleTheme)}
           {sectionLabel(t('languageRegion'))}
           {row('🌐', t('language'), currentLang.native, () => setView('language'))}
           {sectionLabel(t('account'))}
-          {row('ℹ️', t('about'), null, ()=>{})}
+          {row('ℹ️', t('about'), null, () => setView('about'))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Notifications sub-screen
+  if (view === 'notifications') return (
+    <div style={{ position:'fixed', top:0, left:0, width:'100vw', height:'100vh', background:isDark?'rgba(5,10,20,0.7)':'rgba(15,30,46,0.4)', backdropFilter:'blur(6px)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center' }} onClick={onClose}>
+      <div style={{ background:bg, border:`1px solid ${border}`, borderRadius:'16px', width:'420px', maxWidth:'92vw', maxHeight:'80vh', overflow:'hidden', boxShadow:'0 20px 60px rgba(0,0,0,0.25)' }} onClick={e=>e.stopPropagation()}>
+        <div style={{ padding:'18px 24px', borderBottom:`1px solid ${border}`, display:'flex', alignItems:'center', gap:'12px' }}>
+          <button onClick={()=>setView('main')} style={{ background:'none', border:'none', color:isDark?'#378ADD':'#185FA5', fontSize:'15px', cursor:'pointer', fontWeight:700, fontFamily:'inherit', padding:0 }}>← {t('back')}</button>
+          <h2 style={{ margin:0, fontSize:'18px', fontWeight:800, color:text, flex:1 }}>{t('notifications')}</h2>
+        </div>
+        <div style={{ padding: '24px', color: text }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <span>Push Notifications</span>
+            <span style={{ color: '#00D4FF', fontWeight: 700 }}>ON</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <span>Email Alerts</span>
+            <span style={{ color: sub }}>OFF</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span>SMS Alerts</span>
+            <span style={{ color: '#00D4FF', fontWeight: 700 }}>ON</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // About sub-screen
+  if (view === 'about') return (
+    <div style={{ position:'fixed', top:0, left:0, width:'100vw', height:'100vh', background:isDark?'rgba(5,10,20,0.7)':'rgba(15,30,46,0.4)', backdropFilter:'blur(6px)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center' }} onClick={onClose}>
+      <div style={{ background:bg, border:`1px solid ${border}`, borderRadius:'16px', width:'420px', maxWidth:'92vw', maxHeight:'80vh', overflow:'hidden', boxShadow:'0 20px 60px rgba(0,0,0,0.25)' }} onClick={e=>e.stopPropagation()}>
+        <div style={{ padding:'18px 24px', borderBottom:`1px solid ${border}`, display:'flex', alignItems:'center', gap:'12px' }}>
+          <button onClick={()=>setView('main')} style={{ background:'none', border:'none', color:isDark?'#378ADD':'#185FA5', fontSize:'15px', cursor:'pointer', fontWeight:700, fontFamily:'inherit', padding:0 }}>← {t('back')}</button>
+          <h2 style={{ margin:0, fontSize:'18px', fontWeight:800, color:text, flex:1 }}>{t('about')}</h2>
+        </div>
+        <div style={{ padding: '24px', textAlign: 'center', color: text }}>
+          <div style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px', color: '#00D4FF' }}>CrisisIQ</div>
+          <div style={{ fontSize: '14px', color: sub, marginBottom: '24px' }}>Version 1.0.0</div>
+          <div style={{ fontSize: '13px', lineHeight: 1.6, color: sub }}>
+            Built for Google Solution Challenge 2026.<br />
+            Empowering disaster response with real-time analytics and fairness.
+          </div>
         </div>
       </div>
     </div>

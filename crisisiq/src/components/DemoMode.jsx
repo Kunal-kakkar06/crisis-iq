@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import keralaMapImg from '../assets/kerala_demo_map.png';
 import './DemoMode.css';
 
 // Shared Coordinates mappings for relative positioning on a flat CSS map
@@ -79,20 +80,22 @@ export default function DemoMode({ onClose }) {
 
           <div className="demo-map-wrapper">
              {/* Fake Kerala Map Visual */}
-             <div className="fake-map" style={{ width: '100%', height: '100%', position: 'relative', background: '#050A14', backgroundImage: 'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 0)', backgroundSize: '24px 24px' }}>
-                <div style={{ position: 'absolute', bottom: 10, left: 15, fontSize: 10, color: 'rgba(255,255,255,0.2)', fontWeight: 'bold' }}>Google Maps Platform — Historical Visual</div>
+             <div className="fake-map" style={{ backgroundImage: `url(${keralaMapImg})` }}>
+                <div className="map-scan-circle"></div>
+                <div style={{ position: 'absolute', bottom: 10, left: 15, fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: 'bold', zIndex: 10 }}>Google Maps Platform — Historical Visual (Demo)</div>
+                <div style={{ position: 'absolute', top: 10, right: 15, fontSize: 10, color: 'rgba(255,23,68,0.6)', fontWeight: 'bold', zIndex: 10 }}>LIVE: HISTORICAL DATA STREAM</div>
                 
                 {/* Ernakulam - Over-allocated */}
-                <MapPoint x={42} y={68} label="Ernakulam" labelColor="green" resCount={14} size={42} />
+                <MapPoint x={50} y={65} label="Ernakulam" labelColor="green" resCount={14} size={42} />
                 
                 {/* Wayanad - Critical Zero */}
-                <MapPoint x={28} y={15} label="Wayanad" labelColor="red" resCount={0} size={32} isPulse={true} />
+                <MapPoint x={42} y={20} label="Wayanad" labelColor="red" resCount={0} size={32} isPulse={true} />
                 
                 {/* Idukki - Critical Zero */}
-                <MapPoint x={48} y={75} label="Idukki" labelColor="red" resCount={0} size={32} isPulse={true} />
+                <MapPoint x={58} y={75} label="Idukki" labelColor="red" resCount={0} size={32} isPulse={true} />
                 
                 {/* Palakkad - Under-allocated */}
-                <MapPoint x={35} y={45} label="Palakkad" labelColor="red" resCount={1} size={28} />
+                <MapPoint x={52} y={45} label="Palakkad" labelColor="red" resCount={1} size={28} />
              </div>
           </div>
 
@@ -125,29 +128,31 @@ export default function DemoMode({ onClose }) {
           </div>
 
           <div className="demo-map-wrapper">
-             <div className="fake-map" style={{ width: '100%', height: '100%', position: 'relative', background: '#050A14', backgroundImage: 'radial-gradient(rgba(0,212,255,0.05) 1px, transparent 0)', backgroundSize: '24px 24px' }}>
-                <div style={{ position: 'absolute', bottom: 10, left: 15, fontSize: 10, color: 'rgba(255,255,255,0.2)', fontWeight: 'bold' }}>Google Maps Platform — CrisisIQ Optimized</div>
+             <div className="fake-map" style={{ backgroundImage: `url(${keralaMapImg})` }}>
+                <div className="map-scan-circle" style={{ animationDelay: '1.5s', borderColor: 'rgba(0, 255, 136, 0.2)' }}></div>
+                <div style={{ position: 'absolute', bottom: 10, left: 15, fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: 'bold', zIndex: 10 }}>Google Maps Platform — CrisisIQ Optimized (Demo)</div>
+                <div style={{ position: 'absolute', top: 10, right: 15, fontSize: 10, color: 'rgba(0,255,136,0.6)', fontWeight: 'bold', zIndex: 10 }}>LIVE: AI OPTIMIZATION ACTIVE</div>
                 
                 {/* Route Line Ernakulam to Wayanad */}
                 {showRoute && (
                   <svg style={{ position: 'absolute', width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10 }}>
-                    <path d="M 180,480 Q 150,300 120,105" fill="none" stroke="#00D4FF" strokeWidth="4" strokeDasharray="10,10" className="demo-route-path">
+                    <path d="M 210,480 Q 200,300 180,140" fill="none" stroke="#00D4FF" strokeWidth="4" strokeDasharray="10,10" className="demo-route-path">
                       <animate attributeName="stroke-dashoffset" from="200" to="0" dur="3s" repeatCount="indefinite" />
                     </path>
                   </svg>
                 )}
 
                 {/* Wayanad - Balanced */}
-                <MapPoint x={28} y={15} label="Wayanad" labelColor="green" resCount={wayanadRes} size={38} />
+                <MapPoint x={42} y={20} label="Wayanad" labelColor="green" resCount={wayanadRes} size={38} />
                 
                 {/* Idukki - Balanced */}
-                <MapPoint x={48} y={75} label="Idukki" labelColor="green" resCount={6} size={34} />
+                <MapPoint x={58} y={75} label="Idukki" labelColor="green" resCount={6} size={34} />
                 
                 {/* Palakkad - Balanced */}
-                <MapPoint x={35} y={45} label="Palakkad" labelColor="green" resCount={5} size={32} />
+                <MapPoint x={52} y={45} label="Palakkad" labelColor="green" resCount={5} size={32} />
                 
                 {/* Ernakulam - Balanced */}
-                <MapPoint x={42} y={68} label="Ernakulam" labelColor="green" resCount={5} size={32} />
+                <MapPoint x={50} y={65} label="Ernakulam" labelColor="green" resCount={5} size={32} />
              </div>
           </div>
 

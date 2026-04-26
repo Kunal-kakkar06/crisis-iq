@@ -3,9 +3,10 @@
 // Real-time community assistance requests
 // =====================================================
 
-import { useState, useCallback, useMemo, useRef, memo } from 'react';
-import { GoogleMap, useJsApiLoader, HeatmapLayerF, Autocomplete } from '@react-google-maps/api';
+import { useState, useCallback, useMemo, useRef, memo, useEffect } from 'react';
+import { GoogleMap, useJsApiLoader, HeatmapLayerF, CircleF, Autocomplete } from '@react-google-maps/api';
 import { darkMapStyle, GOOGLE_MAPS_ID, GOOGLE_MAPS_LIBRARIES } from '../config/googleMaps';
+import { getIndiaDisasterZones } from '../utils/dataLoader';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import './CitizenRequests.css';
@@ -20,28 +21,47 @@ const initialRequests = [
   { id: 'CR-105', name: 'Meena Krishnan', location: 'Malappuram Shelter', priority: 'LOW', message: "Requesting children books and activity material", time: '3 hrs ago', lat: 11.0510, lng: 76.0711 },
 ];
 
-const sectorHealth = [
-  { name: 'Wayanad', stat: 'Critical', value: 25, color: '#FF1744' },
-  { name: 'Idukki', stat: 'Critical', value: 31, color: '#FF1744' },
-  { name: 'Palakkad', stat: 'Stressed', value: 42, color: '#FF6D00' },
-  { name: 'Thrissur', stat: 'Stressed', value: 58, color: '#FF6D00' },
-  { name: 'Malappuram', stat: 'Moderate', value: 65, color: '#FFB800' },
-  { name: 'Alappuzha', stat: 'Moderate', value: 72, color: '#FFB800' },
-  { name: 'Kottayam', stat: 'Stable', value: 83, color: '#00FF88' },
-  { name: 'Ernakulam', stat: 'Good', value: 91, color: '#00FF88' },
+// Extra India-wide requests generated from disaster zones (appended to Kerala mock data)
+const INDIA_EXTRA_REQUESTS = [
+  { id: 'CR-201', name: 'Arun Sharma', location: 'Odisha Coastal District', priority: 'CRITICAL', message: 'Cyclone aftermath — 3000 families displaced, need immediate shelter and food', time: '5 mins ago', lat: 20.94, lng: 85.09 },
+  { id: 'CR-202', name: 'Deepa Singh', location: 'Bihar Flood Zone', priority: 'CRITICAL', message: 'Village submerged — 800 people stranded on rooftops, need rescue boats', time: '11 mins ago', lat: 25.09, lng: 85.31 },
+  { id: 'CR-203', name: 'Ravi Kumar', location: 'Uttarakhand Landslide Area', priority: 'HIGH', message: 'Road blocked by landslide — 200 tourists stranded, need evacuation', time: '32 mins ago', lat: 30.06, lng: 79.01 },
+  { id: 'CR-204', name: 'Sunita Devi', location: 'Assam Flood Region', priority: 'HIGH', message: 'Flood water entering homes — need pumps and medical supplies', time: '1 hr ago', lat: 26.20, lng: 92.93 },
+  { id: 'CR-205', name: 'Rahul Patel', location: 'Gujarat Earthquake Zone', priority: 'MEDIUM', message: 'Building cracks spotted — need structural assessment team', time: '2 hrs ago', lat: 23.02, lng: 72.57 },
 ];
+
 
 export default memo(function CitizenRequests() {
   const { isDark } = useTheme();
   const { t } = useLanguage();
-  const [requests, setRequests] = useState(initialRequests);
+  const [requests, setRequests] = useState([...initialRequests, ...INDIA_EXTRA_REQUESTS]);
   const [filter, setFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [sosModalVisible, setSosModalVisible] = useState(false);
-  const [sosStatus, setSosStatus] = useState('idle'); // idle | typing | loading | success
+  const [sosStatus, setSosStatus] = useState('idle');
   const [toastMessage, setToastMessage] = useState(null);
   const [sosLocation, setSosLocation] = useState('');
+  const [indiaZones, setIndiaZones] = useState([]);
+  const [sectorHealth, setSectorHealth] = useState([
+    {name:"Wayanad", status:"Critical", percent:25, color:"#FF1744"},
+    {name:"Idukki", status:"Critical", percent:31, color:"#FF1744"},
+    {name:"Palakkad", status:"Stressed", percent:42, color:"#FF4500"},
+    {name:"Thrissur", status:"Stressed", percent:58, color:"#FF4500"},
+    {name:"Alappuzha", status:"Moderate", percent:65, color:"#FFB800"},
+    {name:"Malappuram", status:"Moderate", percent:68, color:"#FFB800"},
+    {name:"Bihar", status:"Stressed", percent:39, color:"#FF4500"},
+    {name:"Assam", status:"Critical", percent:28, color:"#FF1744"},
+    {name:"Uttarakhand", status:"Moderate", percent:55, color:"#FFB800"},
+    {name:"Ernakulam", status:"Good", percent:91, color:"#00FF88"}
+  ]);
   const autocompleteRef = useRef(null);
+
+  // Load India disaster zones (only for map circles now)
+  useEffect(() => {
+    getIndiaDisasterZones().then(zones => {
+      setIndiaZones(zones);
+    }).catch(console.error);
+  }, []);
 
   // Map configuration
   const { isLoaded } = useJsApiLoader({
@@ -177,15 +197,10 @@ export default memo(function CitizenRequests() {
       <div className="cr-header">
         <div className="cr-title-area">
           <h1 className="cr-title">{t('citizenRequests')}</h1>
-          <p className="cr-subtitle">
-            {t('realTimeCommunityAssistance')} — powered by&nbsp;
-            <span className="cr-google-text">
-              <svg width="18" height="18" viewBox="0 0 24 24" style={{ verticalAlign: 'middle', marginRight: '4px' }}>
-                <path fill="#4285F4" d="M12 2L2 7l10 5l10-5l-10-5z" />
-                <path fill="#34A853" d="M2 17l10 5l10-5M2 12l10 5l10-5" />
-              </svg>
-              Google Cloud
-            </span>&nbsp;Speech-to-Text and Vision API
+          <p className="text-gray-400 text-sm mt-1">
+            Real-time community assistance requests
+            — powered by Google Cloud 
+            Speech-to-Text and Vision API
           </p>
         </div>
         <button className="cr-btn-sos" onClick={handleSosClick}>
@@ -290,8 +305,8 @@ export default memo(function CitizenRequests() {
               ) : (
                 <GoogleMap
                   mapContainerClassName="cr-google-map"
-                  center={{ lat: 10.5, lng: 76.5 }}
-                  zoom={7}
+                  center={{ lat: 20.5, lng: 78.5 }}
+                  zoom={4}
                   options={{
                     styles: isDark ? darkMapStyle : [],
                     disableDefaultUI: true,
@@ -324,6 +339,22 @@ export default memo(function CitizenRequests() {
                       }}
                     />
                   )}
+                  {/* India disaster zone circles on citizen map */}
+                  {indiaZones.slice(0, 15).map(zone => (
+                    <CircleF
+                      key={`cr-${zone.id}`}
+                      center={{ lat: zone.lat, lng: zone.lng }}
+                      radius={80000}
+                      options={{
+                        fillColor: zone.color,
+                        fillOpacity: 0.12,
+                        strokeColor: zone.color,
+                        strokeOpacity: 0.6,
+                        strokeWeight: 1,
+                        clickable: false,
+                      }}
+                    />
+                  ))}
                 </GoogleMap>
               )}
             </div>
@@ -338,14 +369,14 @@ export default memo(function CitizenRequests() {
                   <div className="cr-hi-top">
                     <span className="cr-hi-name">{sector.name}</span>
                     <span className="cr-hi-stat" style={{ color: sector.color }}>
-                      {t(sector.stat.toLowerCase()) || sector.stat} ({sector.value}%)
+                      {sector.status} ({sector.percent}%)
                     </span>
                   </div>
                   <div className="cr-hi-track">
                     <div 
                       className="cr-hi-fill" 
                       style={{ 
-                        width: `${sector.value}%`,
+                        width: `${sector.percent}%`,
                         backgroundColor: sector.color 
                       }}
                     ></div>

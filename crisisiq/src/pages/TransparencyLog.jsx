@@ -6,7 +6,7 @@
 import { useState, useEffect, memo } from 'react';
 import { db } from '../firebase';
 import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
-import { getKeralaZones } from '../utils/dataLoader';
+import { getKeralaZones, getIndiaDisasterZones } from '../utils/dataLoader';
 import { useLanguage } from '../context/LanguageContext';
 import './TransparencyLog.css';
 
@@ -93,31 +93,57 @@ function TransparencyLog() {
   const [autoLogs, setAutoLogs] = useState([]);
   const itemsPerPage = 8;
 
-  // Auto-generate audit entries from real zone data
+  // Auto-generate audit entries from real Kerala + India zone data
   useEffect(() => {
-    getKeralaZones().then(zones => {
+    Promise.all([
+      getKeralaZones(),
+      getIndiaDisasterZones(),
+    ]).then(([keralaZones, indiaZones]) => {
       const now = new Date();
-      const generated = zones
+
+      // Kerala entries
+      const keralaEntries = keralaZones
         .filter(z => z.severityScore >= 60)
         .map((z, idx) => {
           const d = new Date(now - idx * 3 * 60000);
           const ts = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
           const isCritical = z.severityScore >= 80;
           return {
-            id: `auto-${z.id}`,
+            id: `kerala-${z.id}`,
             timestamp: ts,
-            resourceId: `${z.id}-${idx + 1}`,
+            resourceId: `KL-${z.id}-${idx + 1}`,
             action: isCritical ? 'Rerouted' : 'Deployed',
             from: isCritical ? 'Staging Depot' : 'Reserve Pool',
-            to: z.name,
+            to: `${z.name}, Kerala`,
             reason: isCritical
-              ? `CRITICAL threshold exceeded (score: ${z.severityScore.toFixed(1)}) — ${z.fatalities} fatalities, ${z.landslides} landslides`
-              : `HIGH severity (score: ${z.severityScore.toFixed(1)}) — rainfall excess ${z.rainfallDeviation}mm`,
+              ? `CRITICAL: score ${z.severityScore.toFixed(1)} — ${z.fatalities} fatalities, ${z.landslides} landslides`
+              : `HIGH: score ${z.severityScore.toFixed(1)} — rainfall excess ${z.rainfallDeviation}mm`,
             isOverride: false,
             isBiasFlag: isCritical,
           };
         });
-      setAutoLogs(generated);
+
+      // India-wide entries (top critical zones)
+      const indiaEntries = indiaZones
+        .filter(z => z.severityScore >= 70)
+        .slice(0, 8)
+        .map((z, idx) => {
+          const d = new Date(now - (keralaEntries.length + idx) * 5 * 60000);
+          const ts = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+          return {
+            id: `india-${z.id}`,
+            timestamp: ts,
+            resourceId: `IND-${String(idx + 1).padStart(3, '0')}`,
+            action: z.severity === 'CRITICAL' ? 'Rerouted' : 'Deployed',
+            from: 'National Reserve',
+            to: z.name,
+            reason: `${z.disasterType} alert — severity ${z.severityScore.toFixed(1)}, ${(z.deaths || 0).toLocaleString()} deaths, ${z.count} historical events`,
+            isOverride: false,
+            isBiasFlag: z.severity === 'CRITICAL',
+          };
+        });
+
+      setAutoLogs([...keralaEntries, ...indiaEntries]);
     }).catch(console.error);
   }, []);
 

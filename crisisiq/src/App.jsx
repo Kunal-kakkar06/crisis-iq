@@ -8,7 +8,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Layout from './components/Layout';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { AppProvider } from './context/AppContext';
+import { AuthProvider } from './context/AuthContext';
+import PrivateRoute from './components/PrivateRoute';
 
+import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 const ResourceMap = lazy(() => import('./pages/ResourceMap'));
 const AllocationEngine = lazy(() => import('./pages/AllocationEngine'));
@@ -25,26 +29,37 @@ const SuspenseFallback = () => (
 
 function App() {
   return (
+    <AuthProvider>
+    <AppProvider>
     <LanguageProvider>
     <ThemeProvider>
       <Router>
-        <Layout>
-          <Suspense fallback={<SuspenseFallback />}>
-            <Routes>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/resource-map" element={<ResourceMap />} />
-              <Route path="/allocation-engine" element={<AllocationEngine />} />
-              <Route path="/fairness-analytics" element={<FairnessAnalytics />} />
-              <Route path="/transparency-log" element={<TransparencyLog />} />
-              <Route path="/citizen-requests" element={<CitizenRequests />} />
-              {/* Default route redirects to dashboard */}
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-          </Suspense>
-        </Layout>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/*" element={
+            <PrivateRoute>
+              <Layout>
+                <Suspense fallback={<SuspenseFallback />}>
+                  <Routes>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/resource-map" element={<ResourceMap />} />
+                    <Route path="/allocation-engine" element={<AllocationEngine />} />
+                    <Route path="/fairness-analytics" element={<FairnessAnalytics />} />
+                    <Route path="/transparency-log" element={<TransparencyLog />} />
+                    <Route path="/citizen-requests" element={<CitizenRequests />} />
+                    {/* Default route redirects to dashboard */}
+                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  </Routes>
+                </Suspense>
+              </Layout>
+            </PrivateRoute>
+          } />
+        </Routes>
       </Router>
     </ThemeProvider>
     </LanguageProvider>
+    </AppProvider>
+    </AuthProvider>
   );
 }
 

@@ -422,3 +422,168 @@ export function isUsingFallback() {
 export function getZonesSync() {
   return _cachedZones;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INDIA-WIDE DISASTER ZONES  (from disasterIND.csv)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Maps rough lat/lng to a named state/region (used when Location is blank)
+function latLngToStateName(lat, lng) {
+  if (lat > 30) return 'Himalayan Region';
+  if (lat > 25 && lng > 88) return 'North-East India';
+  if (lat > 25 && lng > 80) return 'Bihar / UP';
+  if (lat > 25 && lng > 72) return 'Rajasthan';
+  if (lat > 20 && lng > 85) return 'Odisha';
+  if (lat > 20 && lng > 78) return 'Madhya Pradesh';
+  if (lat > 20 && lng > 72) return 'Gujarat';
+  if (lat > 15 && lng > 78) return 'Andhra Pradesh';
+  if (lat > 15 && lng > 74) return 'Karnataka';
+  if (lat > 15 && lng < 74) return 'Goa / Konkan';
+  if (lat > 10 && lng > 78) return 'Tamil Nadu';
+  if (lat > 10 && lng > 75) return 'Kerala';
+  if (lat > 22 && lng > 85) return 'West Bengal';
+  if (lat > 22 && lng < 80) return 'Maharashtra';
+  return 'India';
+}
+
+// Normalise a location string into a short region label
+function normaliseLocation(loc) {
+  if (!loc || loc.trim() === '') return null;
+  // Strip quoted multi-location lists — keep first item
+  const clean = loc.replace(/^["']|["']$/g, '').split(',')[0].trim();
+  return clean || null;
+}
+
+// Colour by disaster type
+function typeToColor(disasterType) {
+  const t = (disasterType || '').toLowerCase();
+  if (t.includes('flood'))         return '#1E90FF';
+  if (t.includes('earthquake'))    return '#FF6D00';
+  if (t.includes('storm') || t.includes('cyclone')) return '#9C27B0';
+  if (t.includes('drought'))       return '#FF8F00';
+  if (t.includes('epidemic') || t.includes('pandemic')) return '#E91E63';
+  if (t.includes('landslide') || t.includes('mass')) return '#795548';
+  if (t.includes('extreme temperature') || t.includes('heat') || t.includes('cold')) return '#FF1744';
+  return '#00D4FF';
+}
+
+// Severity score from deaths + affected
+function computeDisasterSeverity(deaths, affected) {
+  const dScore = Math.min(50, (deaths / 5000) * 50);
+  const aScore = Math.min(50, (affected / 5000000) * 50);
+  return Math.min(100, Math.round((dScore + aScore) * 10) / 10);
+}
+
+let _cachedIndiaZones = null;
+
+/**
+ * Returns India-wide disaster zones derived from disasterIND.csv.
+ * Each zone = { id, name, lat, lng, severity, severityScore, color,
+ *               disasterType, deaths, affected, year, location }
+ */
+export async function getIndiaDisasterZones() {
+  if (_cachedIndiaZones) return _cachedIndiaZones;
+
+  let text = '';
+  try {
+    text = await fetchCSV('disasterIND.csv');
+  } catch (err) {
+    console.warn('[CrisisIQ] disasterIND.csv not found, using fallback India zones');
+    _cachedIndiaZones = INDIA_FALLBACK_ZONES;
+    return _cachedIndiaZones;
+  }
+
+  const rows = parseCSV(text);
+
+  // Group points by rounded lat/lng (1° grid) to avoid clutter
+  const gridMap = {};
+
+  rows.forEach((row, idx) => {
+    const year = parseInt(row['Start Year'] || '0', 10);
+    if (year < 1980) return; // only recent disasters
+
+    const latRaw = parseFloat(row['Latitude']);
+    const lngRaw = parseFloat(row['Longitude']);
+    const hasCoords = !isNaN(latRaw) && !isNaN(lngRaw) &&
+                      latRaw > 5 && latRaw < 38 &&
+                      lngRaw > 65 && lngRaw < 98;
+
+    if (!hasCoords) return;
+
+    // Round to 1° grid cell to cluster nearby events
+    const gridLat = Math.round(latRaw);
+    const gridLng = Math.round(lngRaw);
+    const key = `${gridLat}_${gridLng}`;
+
+    const deaths   = parseFloat(row['Total Deaths']   || '0') || 0;
+    const affected = parseFloat(row['Total Affected'] || '0') || 0;
+    const disType  = row['Disaster Type'] || 'Other';
+    const location = normaliseLocation(row['Location']) ||
+                     latLngToStateName(latRaw, lngRaw);
+
+    if (!gridMap[key]) {
+      gridMap[key] = {
+        lat: latRaw, lng: lngRaw,
+        location, disasterType: disType,
+        deaths: 0, affected: 0, count: 0,
+        latestYear: year, worstType: disType,
+      };
+    }
+
+    const g = gridMap[key];
+    g.deaths   += deaths;
+    g.affected += affected;
+    g.count    += 1;
+    if (year > g.latestYear) {
+      g.latestYear = year;
+      g.location   = location || g.location;
+      g.worstType  = disType;
+    }
+    // Keep the worst disaster type by deaths for this cell
+    if (deaths > (g._maxDeaths || 0)) {
+      g._maxDeaths = deaths;
+      g.worstType  = disType;
+    }
+  });
+
+  // Convert grid cells to zone objects
+  _cachedIndiaZones = Object.entries(gridMap).map(([key, g], i) => {
+    const score = computeDisasterSeverity(g.deaths, g.affected);
+    const { severity } = getSeverityLabel(score);
+    const color = typeToColor(g.worstType);
+    return {
+      id: `IND-${i}`,
+      name: g.location,
+      lat: g.lat,
+      lng: g.lng,
+      severityScore: score,
+      severity,
+      color,
+      disasterType: g.worstType,
+      deaths: g.deaths,
+      affected: g.affected,
+      count: g.count,
+      year: g.latestYear,
+    };
+  }).filter(z => z.severityScore > 5) // drop near-zero impact
+    .sort((a, b) => b.severityScore - a.severityScore);
+
+  console.info('[CrisisIQ] India disaster zones loaded:', _cachedIndiaZones.length);
+  return _cachedIndiaZones;
+}
+
+// ── Fallback static India zones (if CSV unavailable) ─────────────────────────
+const INDIA_FALLBACK_ZONES = [
+  { id: 'IND-1',  name: 'Odisha',           lat: 20.94,  lng: 85.09,  severityScore: 95, severity: 'CRITICAL', color: '#9C27B0', disasterType: 'Storm',      deaths: 10000, affected: 15000000, count: 18, year: 2019 },
+  { id: 'IND-2',  name: 'Gujarat',           lat: 23.02,  lng: 72.57,  severityScore: 92, severity: 'CRITICAL', color: '#FF6D00', disasterType: 'Earthquake',  deaths: 20000, affected: 600000,   count: 8,  year: 2001 },
+  { id: 'IND-3',  name: 'Andhra Pradesh',    lat: 16.50,  lng: 80.64,  severityScore: 88, severity: 'CRITICAL', color: '#9C27B0', disasterType: 'Cyclone',     deaths: 8000,  affected: 12000000, count: 22, year: 2014 },
+  { id: 'IND-4',  name: 'Bihar',             lat: 25.09,  lng: 85.31,  severityScore: 82, severity: 'CRITICAL', color: '#1E90FF', disasterType: 'Flood',       deaths: 4000,  affected: 20000000, count: 30, year: 2019 },
+  { id: 'IND-5',  name: 'Kerala',            lat: 10.85,  lng: 76.27,  severityScore: 78, severity: 'HIGH',     color: '#1E90FF', disasterType: 'Flood',       deaths: 500,   affected: 5000000,  count: 12, year: 2018 },
+  { id: 'IND-6',  name: 'Rajasthan',         lat: 27.02,  lng: 74.21,  severityScore: 70, severity: 'HIGH',     color: '#FF8F00', disasterType: 'Drought',     deaths: 400,   affected: 40000000, count: 15, year: 2018 },
+  { id: 'IND-7',  name: 'Uttarakhand',       lat: 30.06,  lng: 79.01,  severityScore: 68, severity: 'HIGH',     color: '#795548', disasterType: 'Landslide',   deaths: 5000,  affected: 100000,   count: 6,  year: 2013 },
+  { id: 'IND-8',  name: 'Tamil Nadu',        lat: 11.12,  lng: 78.65,  severityScore: 62, severity: 'HIGH',     color: '#1E90FF', disasterType: 'Flood',       deaths: 300,   affected: 3000000,  count: 14, year: 2015 },
+  { id: 'IND-9',  name: 'Maharashtra',       lat: 19.75,  lng: 75.71,  severityScore: 55, severity: 'MEDIUM',   color: '#FF6D00', disasterType: 'Earthquake',  deaths: 1000,  affected: 500000,   count: 9,  year: 2006 },
+  { id: 'IND-10', name: 'Assam',             lat: 26.20,  lng: 92.93,  severityScore: 58, severity: 'MEDIUM',   color: '#1E90FF', disasterType: 'Flood',       deaths: 800,   affected: 5000000,  count: 20, year: 2020 },
+  { id: 'IND-11', name: 'West Bengal',       lat: 22.98,  lng: 87.85,  severityScore: 48, severity: 'MEDIUM',   color: '#9C27B0', disasterType: 'Cyclone',     deaths: 200,   affected: 2000000,  count: 10, year: 2020 },
+  { id: 'IND-12', name: 'Himachal Pradesh',  lat: 31.10,  lng: 77.17,  severityScore: 40, severity: 'MEDIUM',   color: '#795548', disasterType: 'Landslide',   deaths: 300,   affected: 50000,    count: 5,  year: 2021 },
+];

@@ -6,12 +6,18 @@
 // ============================================
 
 import { useState, useEffect, useCallback, useRef, memo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GoogleMap, useJsApiLoader, CircleF, InfoWindowF } from '@react-google-maps/api';
 import { db } from '../firebase';
 import { collection, onSnapshot, query, orderBy, limit, doc } from 'firebase/firestore';
 import { darkMapStyle, keralaZones as staticKeralaZones, GOOGLE_MAPS_ID } from '../config/googleMaps';
-import { getKeralaZones, getNationalStats, isUsingFallback } from '../utils/dataLoader';
+import { getKeralaZones, getNationalStats, isUsingFallback, getIndiaDisasterZones } from '../utils/dataLoader';
+import indiaMapImg from '../assets/india_fallback_map.png';
+import disasterFlood from '../assets/disaster_flood.png';
+import disasterLandslide from '../assets/disaster_landslide.png';
+import disasterCyclone from '../assets/disaster_cyclone.png';
 import { useLanguage } from '../context/LanguageContext';
+import { useAppContext } from '../context/AppContext';
 import './Dashboard.css';
 
 // ── Count-Up Animation Hook ───────────────────
@@ -141,7 +147,9 @@ function StatCard({ icon, label, value, decimals, suffix, change, glowColor }) {
 
 // ── Main Dashboard Component ──────────────────
 function Dashboard() {
+  const navigate = useNavigate();
   const { t } = useLanguage();
+  const { fairnessEnabled, crisisActive } = useAppContext();
   const [selectedZone, setSelectedZone] = useState(null);
   const [auditLogs, setAuditLogs] = useState(mockAuditLogs);
   const [citizenRequests, setCitizenRequests] = useState(mockCitizenRequests);
@@ -153,18 +161,27 @@ function Dashboard() {
     estimated_impact: 94.2
   });
   const [realZones, setRealZones] = useState(staticKeralaZones);
+  const [indiaZones, setIndiaZones] = useState([]);
   const [realStats, setRealStats] = useState(null);
+  const [activeFilter, setActiveFilter] = useState('All');
   const mapRef = useRef(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
 
-  // Load real CSV data on mount
+  const getDisasterImage = (zone) => {
+    if (!zone) return disasterFlood;
+    if (zone.isKerala) return disasterFlood;
+    const type = zone.disasterType || '';
+    if (type.includes('Flood')) return disasterFlood;
+    if (type.includes('Landslide') || type.includes('Earthquake')) return disasterLandslide;
+    if (type.includes('Cyclone') || type.includes('Storm')) return disasterCyclone;
+    return disasterFlood;
+  };
+
+  // Load Kerala zones (for stats) + India disaster zones (for map)
   useEffect(() => {
-    getKeralaZones().then(zones => {
-      setRealZones(zones);
-    }).catch(console.error);
-
-    getNationalStats().then(s => {
-      setRealStats(s);
-    }).catch(console.error);
+    getKeralaZones().then(zones => setRealZones(zones)).catch(console.error);
+    getNationalStats().then(s => setRealStats(s)).catch(console.error);
+    getIndiaDisasterZones().then(zones => setIndiaZones(zones)).catch(console.error);
   }, []);
 
   // Google Maps API loader
@@ -286,10 +303,50 @@ function Dashboard() {
 
     return (
       <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+
+        {/* Disaster Type Legend */}
+        <div style={{
+          position: 'absolute', top: '12px', left: '12px', zIndex: 10,
+          background: 'rgba(5,10,20,0.82)', backdropFilter: 'blur(6px)',
+          border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px',
+          padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '5px',
+        }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: '#A0AEC0', letterSpacing: '1px', marginBottom: '4px' }}>DISASTER TYPE</div>
+          {[
+            { color: '#1E90FF', label: 'Flood' },
+            { color: '#FF6D00', label: 'Earthquake' },
+            { color: '#9C27B0', label: 'Cyclone / Storm' },
+            { color: '#FF8F00', label: 'Drought' },
+            { color: '#E91E63', label: 'Epidemic' },
+            { color: '#795548', label: 'Landslide' },
+            { color: '#FF1744', label: 'Extreme Temp' },
+          ].map(({ color, label }) => (
+            <div
+              key={label}
+              onClick={() => setActiveFilter(f => f === label ? 'All' : label)}
+              style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer',
+                opacity: activeFilter !== 'All' && activeFilter !== label ? 0.4 : 1, transition: 'opacity 0.2s' }}
+            >
+              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: color, flexShrink: 0,
+                boxShadow: `0 0 6px ${color}` }} />
+              <span style={{ fontSize: '11px', color: '#CBD5E0', fontWeight: 500 }}>{label}</span>
+            </div>
+          ))}
+          <div style={{ marginTop: '6px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+              <span style={{ width: '10px', height: '10px', borderRadius: '50%', border: '2px solid #FFFFFF', flexShrink: 0 }} />
+              <span style={{ fontSize: '11px', color: '#CBD5E0', fontWeight: 500 }}>🌊 Kerala 2018</span>
+            </div>
+          </div>
+          <div style={{ marginTop: '6px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '6px', fontSize: '10px', color: '#A0AEC0' }}>
+            Click to filter
+          </div>
+        </div>
+
         {/* Attribution Badge */}
-        <div style={{ 
-          position: 'absolute', bottom: '12px', left: '12px', 
-          backgroundColor: 'rgba(5, 10, 20, 0.7)', padding: '4px 10px', 
+        <div style={{
+          position: 'absolute', bottom: '12px', left: '12px',
+          backgroundColor: 'rgba(5, 10, 20, 0.7)', padding: '4px 10px',
           borderRadius: '4px', zIndex: 1, fontSize: '11px', color: 'rgba(255,255,255,0.7)',
           backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.1)',
           pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '6px'
@@ -299,8 +356,8 @@ function Dashboard() {
 
         <GoogleMap
           mapContainerClassName="google-map-container"
-          center={{ lat: 10.8505, lng: 76.2711 }}
-          zoom={7}
+          center={{ lat: 20.5937, lng: 78.9629 }}
+          zoom={5}
           onLoad={onMapLoad}
           options={{
             styles: darkMapStyle,
@@ -314,38 +371,77 @@ function Dashboard() {
           }}
           onClick={() => setSelectedZone(null)}
         >
-          {realZones.map((zone) => (
+          {/* India-wide disaster zones from disasterIND.csv */}
+          {indiaZones
+            .filter(z => activeFilter === 'All' || z.disasterType?.toLowerCase().includes(activeFilter.toLowerCase().split(' /')[0]))
+            .map((zone) => (
             <CircleF
               key={zone.id}
               center={{ lat: zone.lat, lng: zone.lng }}
-              radius={zone.severity === 'CRITICAL' ? 18000 : zone.severity === 'HIGH' ? 14000 : 10000}
+              radius={zone.severity === 'CRITICAL' ? 120000 : zone.severity === 'HIGH' ? 90000 : 60000}
               options={{
                 fillColor: zone.color,
-                fillOpacity: 0.25,
+                fillOpacity: 0.18,
                 strokeColor: zone.color,
-                strokeOpacity: 0.8,
-                strokeWeight: 2,
+                strokeOpacity: 0.7,
+                strokeWeight: 1.5,
                 clickable: true,
               }}
               onClick={() => setSelectedZone(zone)}
             />
           ))}
 
-          {/* Inner brighter circles — sized by real severity score */}
-          {realZones.map((zone) => (
+          {/* Inner brighter circles sized by severity */}
+          {indiaZones
+            .filter(z => activeFilter === 'All' || z.disasterType?.toLowerCase().includes(activeFilter.toLowerCase().split(' /')[0]))
+            .map((zone) => (
             <CircleF
               key={`inner-${zone.id}`}
               center={{ lat: zone.lat, lng: zone.lng }}
-              radius={Math.max(2000, (zone.severityScore / 100) * 8000)}
+              radius={Math.max(15000, (zone.severityScore / 100) * 60000)}
               options={{
                 fillColor: zone.color,
-                fillOpacity: 0.6,
+                fillOpacity: 0.55,
                 strokeColor: zone.color,
                 strokeOpacity: 1,
                 strokeWeight: 1,
                 clickable: true,
               }}
-              onClick={() => setSelectedZone(zone)}
+              onClick={() => setSelectedZone({ ...zone, isKerala: true })}
+            />
+          ))}
+
+          {/* ── Kerala District Zones (white-outlined — smaller detail layer) ── */}
+          {realZones.map((zone) => (
+            <CircleF
+              key={`kerala-outer-${zone.id}`}
+              center={{ lat: zone.lat, lng: zone.lng }}
+              radius={22000}
+              options={{
+                fillColor: zone.color,
+                fillOpacity: 0.15,
+                strokeColor: '#FFFFFF',
+                strokeOpacity: 0.6,
+                strokeWeight: 1.5,
+                clickable: true,
+              }}
+              onClick={() => setSelectedZone({ ...zone, isKerala: true })}
+            />
+          ))}
+          {realZones.map((zone) => (
+            <CircleF
+              key={`kerala-inner-${zone.id}`}
+              center={{ lat: zone.lat, lng: zone.lng }}
+              radius={Math.max(4000, (zone.severityScore / 100) * 12000)}
+              options={{
+                fillColor: zone.color,
+                fillOpacity: 0.75,
+                strokeColor: zone.color,
+                strokeOpacity: 1,
+                strokeWeight: 1,
+                clickable: true,
+              }}
+              onClick={() => setSelectedZone({ ...zone, isKerala: true })}
             />
           ))}
 
@@ -356,36 +452,81 @@ function Dashboard() {
               options={{ maxWidth: 320 }}
             >
               <div className="dark-info-window">
+                <div className="diw-image-header" style={{ width: 'calc(100% + 24px)', margin: '-12px -12px 12px -12px', height: '140px', overflow: 'hidden', position: 'relative' }}>
+                  <img src={getDisasterImage(selectedZone)} alt="Disaster Area" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%', background: 'linear-gradient(to top, #0D1B2A, transparent)' }}></div>
+                </div>
+
                 <h3 className="diw-title">{selectedZone.name}</h3>
-                <span 
-                  className="diw-severity-pill"
-                  style={{ 
-                    backgroundColor: `${selectedZone.color}22`,
-                    color: selectedZone.color,
-                    border: `1px solid ${selectedZone.color}55`
-                  }}
-                >
-                  {selectedZone.severity}
-                </span>
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                  <span
+                    className="diw-severity-pill"
+                    style={{
+                      backgroundColor: `${selectedZone.color}22`,
+                      color: selectedZone.color,
+                      border: `1px solid ${selectedZone.color}55`
+                    }}
+                  >
+                    {selectedZone.severity}
+                  </span>
+                  {selectedZone.isKerala && (
+                    <span style={{ background: 'rgba(255,255,255,0.1)', color: '#A0AEC0', fontSize: '10px', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
+                      🌊 Kerala 2018
+                    </span>
+                  )}
+                  {!selectedZone.isKerala && selectedZone.disasterType && (
+                    <span style={{ background: `${selectedZone.color}18`, color: selectedZone.color, fontSize: '10px', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
+                      {selectedZone.disasterType}
+                    </span>
+                  )}
+                </div>
+
                 <div className="diw-stats">
+                  {selectedZone.isKerala ? (
+                    // ── Kerala zone details ──
+                    <>
+                      <div className="diw-row">
+                        <span className="diw-label">Fatalities:</span>
+                        <span className="diw-value">{(selectedZone.fatalities || 0).toLocaleString()}</span>
+                      </div>
+                      <div className="diw-row">
+                        <span className="diw-label">Relief Camps:</span>
+                        <span className="diw-value">{(selectedZone.reliefCamps || 0).toLocaleString()}</span>
+                      </div>
+                      <div className="diw-row">
+                        <span className="diw-label">Houses Damaged:</span>
+                        <span className="diw-value">{(selectedZone.housesAffected || 0).toLocaleString()}</span>
+                      </div>
+                      <div className="diw-row">
+                        <span className="diw-label">Landslides:</span>
+                        <span className="diw-value">{selectedZone.landslides || 0}</span>
+                      </div>
+                    </>
+                  ) : (
+                    // ── India disaster zone details ──
+                    <>
+                      <div className="diw-row">
+                        <span className="diw-label">Deaths:</span>
+                        <span className="diw-value">{(selectedZone.deaths || 0).toLocaleString()}</span>
+                      </div>
+                      <div className="diw-row">
+                        <span className="diw-label">Affected:</span>
+                        <span className="diw-value">{(selectedZone.affected || 0).toLocaleString()}</span>
+                      </div>
+                      {selectedZone.year && (
+                        <div className="diw-row">
+                          <span className="diw-label">Latest Year:</span>
+                          <span className="diw-value">{selectedZone.year}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
                   <div className="diw-row">
-                    <span className="diw-label">{t('available')}:</span>
-                    <span className="diw-value">{selectedZone.resources || 0} {t('units')}</span>
-                  </div>
-                  <div className="diw-row">
-                    <span className="diw-label">{t('people')}:</span>
-                    <span className="diw-value">{(selectedZone.affected || selectedZone.population || 0).toLocaleString()}</span>
-                  </div>
-                  <div className="diw-row">
-                    <span className="diw-label">{t('biasScore')}:</span>
+                    <span className="diw-label">Severity Score:</span>
                     <span className="diw-value">{(selectedZone.severityScore || 0).toFixed(1)} / 100</span>
                   </div>
-                  <div className="diw-row">
-                    <span className="diw-label">{t('recent')}:</span>
-                    <span className="diw-value">{selectedZone.lastUpdated || '—'}</span>
-                  </div>
                 </div>
-                <a className="diw-link" href="#" onClick={(e) => e.preventDefault()}>
+                <a className="diw-link" href="#" onClick={(e) => { e.preventDefault(); setDetailModalOpen(true); }}>
                   {t('viewDetails')} →
                 </a>
               </div>
@@ -398,28 +539,41 @@ function Dashboard() {
 
   // ── Map Fallback (no API key) ───────────────
   const renderMapFallback = () => (
-    <div className="map-fallback">
+    <div className="map-fallback" style={{ 
+      position: 'relative', 
+      overflow: 'hidden',
+      backgroundImage: `linear-gradient(rgba(5, 10, 20, 0.8), rgba(5, 10, 20, 0.8)), url(${indiaMapImg})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
       <div className="map-fallback-header">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" strokeWidth="2">
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
           <circle cx="12" cy="10" r="3" />
         </svg>
-        <span>Tactical Map — Kerala Zones</span>
+        <span>Tactical Preview — National Disaster Zones</span>
       </div>
-      <div className="map-fallback-grid">
-        {realZones.map((zone) => (
-          <div key={zone.id} className="zone-card-mini" style={{ borderColor: zone.color }}>
-            <div className="zone-dot" style={{ background: zone.color, boxShadow: `0 0 8px ${zone.color}` }}></div>
-            <div className="zone-card-info">
-              <span className="zone-name">{zone.name}</span>
-              <span className={`zone-severity ${getPriorityClass(zone.severity)}`}>{zone.severity}</span>
-            </div>
-            <span className="zone-resources">{zone.resources} units</span>
-          </div>
-        ))}
+      
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+         <img src={indiaMapImg} alt="India Map" style={{ maxWidth: '80%', maxHeight: '80%', opacity: 0.4, filter: 'drop-shadow(0 0 20px rgba(0,212,255,0.2))' }} />
+         <div className="map-fallback-grid" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'transparent', padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px', overflowY: 'auto' }}>
+            {indiaZones.slice(0, 15).map((zone) => (
+              <div key={zone.id} className="zone-card-mini" style={{ borderColor: zone.color, background: 'rgba(5, 10, 20, 0.8)', backdropFilter: 'blur(4px)' }}>
+                <div className="zone-dot" style={{ background: zone.color, boxShadow: `0 0 8px ${zone.color}` }}></div>
+                <div className="zone-card-info">
+                  <span className="zone-name">{zone.name}</span>
+                  <span className={`zone-severity ${getPriorityClass(zone.severity)}`}>{zone.severity}</span>
+                </div>
+                <span className="zone-resources" style={{ fontSize: '9px', opacity: 0.7 }}>{zone.disasterType}</span>
+              </div>
+            ))}
+         </div>
       </div>
-      <p className="map-fallback-note">
-        Set <code>VITE_GOOGLE_MAPS_API_KEY</code> in <code>.env</code> to enable the interactive map.
+
+      <p className="map-fallback-note" style={{ background: 'rgba(0,0,0,0.6)', margin: 0, padding: '10px' }}>
+        Interactive map requires <code>VITE_GOOGLE_MAPS_API_KEY</code>. Showing tactical static preview.
       </p>
     </div>
   );
@@ -465,10 +619,10 @@ function Dashboard() {
             </svg>
           }
           label={t('biasScore')}
-          value={stats.bias_score}
+          value={fairnessEnabled ? stats.bias_score : 0.71}
           decimals={2}
-          change={`-67.6% ${t('improved')}`}
-          glowColor="#00FF88"
+          change={fairnessEnabled ? `-67.6% ${t('improved')}` : `0.0% ${t('improved')}`}
+          glowColor={fairnessEnabled ? "#00FF88" : "#FF1744"}
         />
         <StatCard
           icon={
@@ -511,10 +665,17 @@ function Dashboard() {
             <h2>
               {t('tacticalOverview')}
             </h2>
-            <div className="live-indicator">
-              <span className="live-dot"></span>
-              {t('live')}
-            </div>
+            {crisisActive ? (
+              <div className="live-indicator">
+                <span className="live-dot"></span>
+                {t('live')}
+              </div>
+            ) : (
+              <div className="live-indicator" style={{ color: '#888' }}>
+                <span className="live-dot" style={{ background: '#888', boxShadow: 'none' }}></span>
+                Offline
+              </div>
+            )}
           </div>
 
           <div className="map-wrapper" style={{ position: 'relative' }}>
@@ -524,7 +685,11 @@ function Dashboard() {
             </div>
           </div>
 
-          <button className="btn-expand" id="btn-expand-tactical">
+          <button 
+            className="btn-expand" 
+            id="btn-expand-tactical"
+            onClick={() => navigate('/resource-map')}
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="21" y1="3" x2="14" y2="10" />
               <line x1="3" y1="21" x2="10" y2="14" />
@@ -567,9 +732,9 @@ function Dashboard() {
               <div className="fairness-row">
                 <span className="fairness-label">{t('afterAllocation')}</span>
                 <div className="fairness-bar-track">
-                  <div className="fairness-bar-fill fairness-bar-after" style={{ width: '23%' }}></div>
+                  <div className="fairness-bar-fill fairness-bar-after" style={{ width: fairnessEnabled ? '23%' : '71%', background: fairnessEnabled ? '#1D9E75' : '#E24B4A' }}></div>
                 </div>
-                <span className="fairness-score fairness-score-good">0.23</span>
+                <span className={`fairness-score ${fairnessEnabled ? 'fairness-score-good' : 'fairness-score-bad'}`}>{fairnessEnabled ? '0.23' : '0.71'}</span>
               </div>
             </div>
             <div className="fairness-result">
@@ -582,8 +747,15 @@ function Dashboard() {
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </span>
-              {t('biasReducedBy')} <strong>67.6%</strong>
+              {t('biasReducedBy')} <strong>{fairnessEnabled ? '67.6%' : '0.0%'}</strong>
             </div>
+            <button 
+              className="btn-expand" 
+              style={{ marginTop: '12px', width: '100%' }}
+              onClick={() => navigate('/fairness-analytics')}
+            >
+              {t('fullFairnessReport') || 'Full Fairness Report'} →
+            </button>
           </div>
 
           {/* Transparency Audit Feed */}
@@ -592,10 +764,17 @@ function Dashboard() {
               <h2>
                 {t('transparencyAudit')}
               </h2>
-              <div className="live-indicator">
-                <span className="live-dot"></span>
-                {t('live')}
-              </div>
+              {crisisActive ? (
+                <div className="live-indicator">
+                  <span className="live-dot"></span>
+                  {t('live')}
+                </div>
+              ) : (
+                <div className="live-indicator" style={{ color: '#888' }}>
+                  <span className="live-dot" style={{ background: '#888', boxShadow: 'none' }}></span>
+                  Offline
+                </div>
+              )}
             </div>
 
             <div className="audit-feed">
@@ -610,6 +789,13 @@ function Dashboard() {
                 </div>
               ))}
             </div>
+            <button 
+              className="btn-expand" 
+              style={{ marginTop: '12px', width: '100%' }}
+              onClick={() => navigate('/transparency-log')}
+            >
+              {t('viewDetailedLog') || 'View Detailed Log'} →
+            </button>
           </div>
 
           {/* Citizen Requests */}
@@ -645,6 +831,13 @@ function Dashboard() {
                 </div>
               ))}
             </div>
+            <button 
+              className="btn-expand" 
+              style={{ marginTop: '12px', width: '100%' }}
+              onClick={() => navigate('/citizen-requests')}
+            >
+              {t('viewAllRequests') || 'View All Requests'} →
+            </button>
           </div>
         </div>
       </div>
@@ -660,10 +853,17 @@ function Dashboard() {
             </svg>
             {t('liveAuditStream')}
           </h2>
-          <div className="live-indicator">
-            <span className="live-dot"></span>
-            {t('live')}
-          </div>
+          {crisisActive ? (
+            <div className="live-indicator">
+              <span className="live-dot"></span>
+              {t('live')}
+            </div>
+          ) : (
+            <div className="live-indicator" style={{ color: '#888' }}>
+              <span className="live-dot" style={{ background: '#888', boxShadow: 'none' }}></span>
+              Offline
+            </div>
+          )}
         </div>
 
         <div className="allocation-table-wrapper">
@@ -698,7 +898,107 @@ function Dashboard() {
             </tbody>
           </table>
         </div>
+        <div style={{ textAlign: 'center', marginTop: '16px' }}>
+          <button 
+            className="btn-expand" 
+            style={{ minWidth: '240px' }}
+            onClick={() => navigate('/allocation-engine')}
+          >
+            {t('expandAllocationView') || 'Expand Allocation View'}
+          </button>
+        </div>
       </div>
+
+      {/* ── Detail Modal ── */}
+      {detailModalOpen && selectedZone && (
+        <div className="zone-detail-overlay animate-fade-in" onClick={() => setDetailModalOpen(false)}>
+          <div className="zone-detail-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setDetailModalOpen(false)}>&times;</button>
+            
+            <div className="modal-image-wrapper">
+              <img src={getDisasterImage(selectedZone)} alt={selectedZone.name} />
+              <div className="modal-image-overlay">
+                <div className="modal-header-content">
+                  <span className={`modal-severity-badge ${getPriorityClass(selectedZone.severity)}`}>
+                    {selectedZone.severity}
+                  </span>
+                  <h2>{selectedZone.name}</h2>
+                  <p>{selectedZone.isKerala ? 'Kerala Flood Relief Operations 2018' : `${selectedZone.disasterType || 'Disaster'} Response Zone`}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-body">
+              <div className="modal-stats-grid">
+                {selectedZone.isKerala ? (
+                  <>
+                    <div className="modal-stat-box">
+                      <label>Fatalities</label>
+                      <span>{selectedZone.fatalities?.toLocaleString() || 0}</span>
+                    </div>
+                    <div className="modal-stat-box">
+                      <label>Relief Camps</label>
+                      <span>{selectedZone.reliefCamps?.toLocaleString() || 0}</span>
+                    </div>
+                    <div className="modal-stat-box">
+                      <label>Houses Damaged</label>
+                      <span>{selectedZone.housesAffected?.toLocaleString() || 0}</span>
+                    </div>
+                    <div className="modal-stat-box">
+                      <label>Landslides</label>
+                      <span>{selectedZone.landslides || 0}</span>
+                    </div>
+                    <div className="modal-stat-box">
+                      <label>Rainfall Deviation</label>
+                      <span>+{selectedZone.rainfallDeviation || 0} mm</span>
+                    </div>
+                    <div className="modal-stat-box">
+                      <label>Severity Index</label>
+                      <span>{selectedZone.severityScore?.toFixed(1) || 0}/100</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="modal-stat-box">
+                      <label>Deaths (Historic)</label>
+                      <span>{selectedZone.deaths?.toLocaleString() || 0}</span>
+                    </div>
+                    <div className="modal-stat-box">
+                      <label>People Affected</label>
+                      <span>{selectedZone.affected?.toLocaleString() || 0}</span>
+                    </div>
+                    <div className="modal-stat-box">
+                      <label>Event Year</label>
+                      <span>{selectedZone.year || 'N/A'}</span>
+                    </div>
+                    <div className="modal-stat-box">
+                      <label>Disaster Type</label>
+                      <span>{selectedZone.disasterType || 'General'}</span>
+                    </div>
+                    <div className="modal-stat-box">
+                      <label>Severity Score</label>
+                      <span>{selectedZone.severityScore?.toFixed(1) || 0}/100</span>
+                    </div>
+                    <div className="modal-stat-box">
+                      <label>Response Status</label>
+                      <span style={{ color: '#00FF88' }}>ACTIVE</span>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="modal-actions">
+                <button className="btn-modal-action primary" onClick={() => { setDetailModalOpen(false); navigate('/resource-map'); }}>
+                  Track Resource Deployment
+                </button>
+                <button className="btn-modal-action secondary" onClick={() => setDetailModalOpen(false)}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

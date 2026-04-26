@@ -10,6 +10,7 @@ import {
   GoogleMap, 
   useJsApiLoader, 
   MarkerF, 
+  CircleF,
   InfoWindowF,
   HeatmapLayerF,
   DirectionsRenderer
@@ -20,7 +21,9 @@ import {
   GOOGLE_MAPS_LIBRARIES,
   GOOGLE_MAPS_ID,
 } from '../config/googleMaps';
-import { getKeralaZones } from '../utils/dataLoader';
+import { getKeralaZones, getIndiaDisasterZones } from '../utils/dataLoader';
+import indiaMapImg from '../assets/india_fallback_map.png';
+import keralaMapImg from '../assets/kerala_demo_map.png';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import './ResourceMap.css';
@@ -54,6 +57,8 @@ const HOSPITAL_ICON = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
 `)}`;
 
 
+const INDIA_CENTER = { lat: 20.5937, lng: 78.9629 };
+
 function ResourceMap() {
   const { isDark } = useTheme();
   const { t } = useLanguage();
@@ -64,19 +69,21 @@ function ResourceMap() {
   const [activeDistrict, setActiveDistrict] = useState('All');
   const [routeEta, setRouteEta] = useState(null);
   const [realZones, setRealZones] = useState([]);
+  const [indiaZones, setIndiaZones] = useState([]);
   const [allHospitals, setAllHospitals] = useState([]);
+  const [mapView, setMapView] = useState('india'); // 'india' | 'kerala'
   const mapRef = useRef(null);
 
   // Load real CSV data
   useEffect(() => {
     getKeralaZones().then(zones => {
       setRealZones(zones);
-      // Flatten all hospitals from all zones
       const hospitals = zones.flatMap(z =>
         (z.hospitals || []).map(h => ({ ...h, districtName: z.name }))
       );
       setAllHospitals(hospitals);
     }).catch(console.error);
+    getIndiaDisasterZones().then(zones => setIndiaZones(zones)).catch(console.error);
   }, []);
 
   // Load Maps with visualization + places libraries
@@ -85,11 +92,6 @@ function ResourceMap() {
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
     libraries: GOOGLE_MAPS_LIBRARIES,
   });
-
-  const onMapLoad = useCallback((map) => {
-    mapRef.current = map;
-    calculateRoute();
-  }, []);
 
   // Calculate route from Ernakulam Depot (STABLE) to Wayanad (CRITICAL)
   const calculateRoute = async () => {
@@ -111,10 +113,20 @@ function ResourceMap() {
     }
   };
 
+  const onMapLoad = useCallback((map) => {
+    mapRef.current = map;
+    calculateRoute();
+  }, []);
+
   const resetView = () => {
     if (mapRef.current) {
-      mapRef.current.panTo(KERALA_CENTER);
-      mapRef.current.setZoom(8);
+      if (mapView === 'india') {
+        mapRef.current.panTo(INDIA_CENTER);
+        mapRef.current.setZoom(5);
+      } else {
+        mapRef.current.panTo(KERALA_CENTER);
+        mapRef.current.setZoom(8);
+      }
     }
     setActiveType('All');
     setActiveSeverity('All');
@@ -157,7 +169,33 @@ function ResourceMap() {
 
   const renderMap = () => {
     if (loadError) {
-      return <div className="map-error">{t('requiresValidApiKey')}: {loadError.message}</div>;
+      return (
+        <div className="map-fallback" style={{ 
+          width: '100%', height: '100%', position: 'relative', overflow: 'hidden',
+          backgroundImage: `linear-gradient(rgba(5, 10, 20, 0.8), rgba(5, 10, 20, 0.8)), url(${mapView === 'india' ? indiaMapImg : keralaMapImg})`,
+          backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div className="map-fallback-header" style={{ position: 'absolute', top: '20px', left: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" strokeWidth="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{mapView === 'india' ? 'National Preview' : 'Regional Preview'}</span>
+          </div>
+          
+          <img 
+            src={mapView === 'india' ? indiaMapImg : keralaMapImg} 
+            alt="Map Preview" 
+            style={{ maxWidth: '60%', opacity: 0.3, filter: 'drop-shadow(0 0 30px rgba(0,212,255,0.2))' }} 
+          />
+          
+          <div style={{ position: 'absolute', bottom: '40px', background: 'rgba(0,0,0,0.6)', padding: '15px 25px', borderRadius: '8px', textAlign: 'center' }}>
+            <p style={{ margin: '0 0 8px 0', color: '#fff', fontSize: '15px' }}>{t('requiresValidApiKey')}</p>
+            <p style={{ margin: 0, color: '#A0AEC0', fontSize: '12px' }}>Interactive routing and heatmaps are disabled in static preview mode.</p>
+          </div>
+        </div>
+      );
     }
 
     if (!isLoaded) {
@@ -172,8 +210,8 @@ function ResourceMap() {
     return (
       <GoogleMap
         mapContainerClassName="full-map-container"
-        center={KERALA_CENTER}
-        zoom={8}
+        center={mapView === 'india' ? INDIA_CENTER : KERALA_CENTER}
+        zoom={mapView === 'india' ? 5 : 8}
         onLoad={onMapLoad}
         options={{
           styles: isDark ? darkMapStyle : [],
@@ -188,12 +226,12 @@ function ResourceMap() {
         }}
         onClick={() => setSelectedZone(null)}
       >
-        {/* Heatmap Layer with real intensity from severity scores */}
+        {/* Heatmap — Kerala data */}
         <HeatmapLayerF
           data={getHeatmapPoints(realZones)}
           options={{
-            radius: 45,
-            opacity: 0.7,
+            radius: mapView === 'india' ? 20 : 45,
+            opacity: 0.6,
             gradient: [
               'rgba(0, 0, 0, 0)',
               'rgba(255, 255, 0, 0.4)',
@@ -231,7 +269,45 @@ function ResourceMap() {
           />
         )}
 
-        {/* Zone Markers — sized by real severity score */}
+        {/* India Disaster Zone Circles */}
+        {mapView === 'india' && indiaZones
+          .filter(z => activeSeverity === 'All' || z.severity === activeSeverity.toUpperCase())
+          .map((zone) => (
+          <CircleF
+            key={`india-${zone.id}`}
+            center={{ lat: zone.lat, lng: zone.lng }}
+            radius={zone.severity === 'CRITICAL' ? 120000 : zone.severity === 'HIGH' ? 90000 : 60000}
+            options={{
+              fillColor: zone.color,
+              fillOpacity: 0.2,
+              strokeColor: zone.color,
+              strokeOpacity: 0.8,
+              strokeWeight: 1.5,
+              clickable: true,
+            }}
+            onClick={() => setSelectedZone({ ...zone, isIndia: true })}
+          />
+        ))}
+        {mapView === 'india' && indiaZones
+          .filter(z => activeSeverity === 'All' || z.severity === activeSeverity.toUpperCase())
+          .map((zone) => (
+          <CircleF
+            key={`india-inner-${zone.id}`}
+            center={{ lat: zone.lat, lng: zone.lng }}
+            radius={Math.max(15000, (zone.severityScore / 100) * 55000)}
+            options={{
+              fillColor: zone.color,
+              fillOpacity: 0.55,
+              strokeColor: zone.color,
+              strokeOpacity: 1,
+              strokeWeight: 1,
+              clickable: true,
+            }}
+            onClick={() => setSelectedZone({ ...zone, isIndia: true })}
+          />
+        ))}
+
+        {/* Kerala Zone Markers — sized by severity score */}
         {filteredZones.map((zone) => {
           const svgMarker = {
             path: window.google.maps.SymbolPath.CIRCLE,
@@ -262,15 +338,16 @@ function ResourceMap() {
           />
         ))}
 
-        {/* Custom Dark-Themed Info Window */}
+        {/* Info Window — Kerala or India */}
         {selectedZone && (
           <InfoWindowF
             position={{ lat: selectedZone.lat, lng: selectedZone.lng }}
             onCloseClick={() => setSelectedZone(null)}
             options={{ maxWidth: 320 }}
           >
-              <div className="dark-info-window">
-                <h3 className="diw-title">{selectedZone.name}</h3>
+            <div className="dark-info-window">
+              <h3 className="diw-title">{selectedZone.name}</h3>
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
                 <span 
                   className="diw-severity-pill"
                   style={{ 
@@ -279,34 +356,34 @@ function ResourceMap() {
                     border: `1px solid ${selectedZone.color}55`
                   }}
                 >
-                  {t(selectedZone.severity.toLowerCase())} — {t('biasScore')}: {selectedZone.severityScore?.toFixed(1)}
+                  {selectedZone.severity} — {selectedZone.severityScore?.toFixed(1)}
                 </span>
-                <div className="diw-stats">
-                  <div className="diw-row">
-                    <span className="diw-label">{t('totalFatalities')}:</span>
-                    <span className="diw-value">{selectedZone.fatalities ?? 'N/A'}</span>
-                  </div>
-                  <div className="diw-row">
-                    <span className="diw-label">{t('rainfallExcess')}:</span>
-                    <span className="diw-value">{selectedZone.rainfallDeviation?.toFixed(0) ?? 'N/A'} mm</span>
-                  </div>
-                  <div className="diw-row">
-                    <span className="diw-label">{t('landslides')}:</span>
-                    <span className="diw-value">{selectedZone.landslides ?? 'N/A'}</span>
-                  </div>
-                  <div className="diw-row">
-                    <span className="diw-label">{t('nearestHospital')}:</span>
-                    <span className="diw-value">{selectedZone.hospitals?.[0]?.name?.slice(0, 28) || 'No data'}</span>
-                  </div>
-                  <div className="diw-row">
-                    <span className="diw-label">{t('reliefCamps')}:</span>
-                    <span className="diw-value">{selectedZone.reliefCamps ?? 'N/A'}</span>
-                  </div>
-                </div>
-                <a className="diw-link" href="#" onClick={(e) => e.preventDefault()}>
-                  {t('viewDetails')} →
-                </a>
+                {selectedZone.isIndia && selectedZone.disasterType && (
+                  <span style={{ background: `${selectedZone.color}18`, color: selectedZone.color, fontSize: '10px', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
+                    {selectedZone.disasterType}
+                  </span>
+                )}
               </div>
+              <div className="diw-stats">
+                {selectedZone.isIndia ? (
+                  <>
+                    <div className="diw-row"><span className="diw-label">Deaths:</span><span className="diw-value">{(selectedZone.deaths || 0).toLocaleString()}</span></div>
+                    <div className="diw-row"><span className="diw-label">Affected:</span><span className="diw-value">{(selectedZone.affected || 0).toLocaleString()}</span></div>
+                    <div className="diw-row"><span className="diw-label">Events (1980+):</span><span className="diw-value">{selectedZone.count} disasters</span></div>
+                    <div className="diw-row"><span className="diw-label">Latest Year:</span><span className="diw-value">{selectedZone.year}</span></div>
+                  </>
+                ) : (
+                  <>
+                    <div className="diw-row"><span className="diw-label">{t('totalFatalities')}:</span><span className="diw-value">{selectedZone.fatalities ?? 'N/A'}</span></div>
+                    <div className="diw-row"><span className="diw-label">{t('rainfallExcess')}:</span><span className="diw-value">{selectedZone.rainfallDeviation?.toFixed(0) ?? 'N/A'} mm</span></div>
+                    <div className="diw-row"><span className="diw-label">{t('landslides')}:</span><span className="diw-value">{selectedZone.landslides ?? 'N/A'}</span></div>
+                    <div className="diw-row"><span className="diw-label">{t('nearestHospital')}:</span><span className="diw-value">{selectedZone.hospitals?.[0]?.name?.slice(0, 28) || 'No data'}</span></div>
+                    <div className="diw-row"><span className="diw-label">{t('reliefCamps')}:</span><span className="diw-value">{selectedZone.reliefCamps ?? 'N/A'}</span></div>
+                  </>
+                )}
+              </div>
+              <a className="diw-link" href="#" onClick={(e) => e.preventDefault()}>{t('viewDetails')} →</a>
+            </div>
           </InfoWindowF>
         )}
       </GoogleMap>
@@ -317,6 +394,15 @@ function ResourceMap() {
     <div className="resource-map-page">
       {/* ── TOP FILTER BAR ── */}
       <div className="filter-bar">
+        {/* View toggle */}
+        <div className="filter-group">
+          <label>View</label>
+          <select value={mapView} onChange={(e) => { setMapView(e.target.value); resetView(); }}>
+            <option value="india">All India</option>
+            <option value="kerala">Kerala Detail</option>
+          </select>
+        </div>
+
         <div className="filter-group">
           <label>{t('resourceType')}</label>
           <select value={activeType} onChange={(e) => setActiveType(e.target.value)}>
@@ -404,51 +490,63 @@ function ResourceMap() {
             </div>
         </div>
 
-        {/* ── RIGHT PANEL: ZONE LIST ── */}
-        <div className="zone-list-panel">
+          {/* ── RIGHT PANEL: ZONE LIST ── */}
+          <div className="zone-list-panel">
             <div className="panel-header">
-                <h2>{t('zoneStatus')}</h2>
-                <div className="live-indicator">
-                    <span className="live-dot"></span>
-                    {t('live')}
-                </div>
+              <h2>{mapView === 'india' ? 'India Disaster Zones' : t('zoneStatus')}</h2>
+              <div className="live-indicator">
+                <span className="live-dot"></span>
+                {t('live')}
+              </div>
             </div>
             
             <div className="zone-scroll-list">
-                {filteredZones.map(zone => (
+              {(mapView === 'india' ? indiaZones.slice(0, 20) : filteredZones).map(zone => (
+                <div 
+                  key={zone.id} 
+                  className={`zone-list-item ${selectedZone && selectedZone.id === zone.id ? 'active' : ''}`}
+                  onClick={() => handleZoneClick(zone)}
+                >
+                  <div className="zone-item-top">
+                    <span className="zone-item-name">{zone.name}</span>
+                    <span className={`zone-item-badge ${getSeverityClass(zone.severity)}`}>
+                      {t(zone.severity.toLowerCase())}
+                    </span>
+                  </div>
+                  
+                  <div className="zone-item-stats">
+                    {mapView === 'india' ? (
+                      <>
+                        <span className="res-count">{(zone.deaths || 0).toLocaleString()} deaths</span>
+                        <span className="res-need"> | {zone.disasterType}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="res-count">{zone.resources} {t('units').toLowerCase()}</span>
+                        <span className="res-need">/ {zone.need} {t('assignedDistrict').toLowerCase()}</span>
+                      </>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#4a6380', marginTop: '2px' }}>
+                    {mapView === 'india' 
+                      ? `Score: ${zone.severityScore?.toFixed(1)} | ${zone.count} events since 1980`
+                      : `${t('biasScore')}: ${zone.severityScore?.toFixed(1)} | ⚡ ${zone.fatalities} ${t('totalFatalities').toLowerCase()}`
+                    }
+                  </div>
+                  
+                  <div className="zone-progress-track">
                     <div 
-                        key={zone.id} 
-                        className={`zone-list-item ${selectedZone && selectedZone.id === zone.id ? 'active' : ''}`}
-                        onClick={() => handleZoneClick(zone)}
-                    >
-                        <div className="zone-item-top">
-                            <span className="zone-item-name">{zone.name}</span>
-                            <span className={`zone-item-badge ${getSeverityClass(zone.severity)}`}>
-                                {t(zone.severity.toLowerCase())}
-                            </span>
-                        </div>
-                        
-                        <div className="zone-item-stats">
-                            <span className="res-count">{zone.resources} {t('units').toLowerCase()}</span>
-                            <span className="res-need">/ {zone.need} {t('assignedDistrict').toLowerCase()}</span>
-                        </div>
-                        <div style={{ fontSize: '11px', color: '#4a6380', marginTop: '2px' }}>
-                            {t('biasScore')}: {zone.severityScore?.toFixed(1)} | ⚡ {zone.fatalities} {t('totalFatalities').toLowerCase()}
-                        </div>
-                        
-                        <div className="zone-progress-track">
-                            <div 
-                                className="zone-progress-fill" 
-                                style={{
-                                    width: `${Math.min((zone.resources / Math.max(zone.need, 1)) * 100, 100)}%`,
-                                    background: zone.color
-                                }}
-                            ></div>
-                        </div>
-                    </div>
-                ))}
+                      className="zone-progress-fill" 
+                      style={{
+                        width: `${Math.min(zone.severityScore, 100)}%`,
+                        background: zone.color
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
             </div>
-        </div>
+          </div>
       </div>
     </div>
   );

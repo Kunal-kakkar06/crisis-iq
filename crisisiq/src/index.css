@@ -28,19 +28,19 @@
    Light Theme Overrides
    ============================================ */
 .light {
-  --color-bg-primary:    #F0F4F8;
-  --color-bg-card:       #FFFFFF;
-  --color-bg-sidebar:    #0F1E2E;
-  --color-text-primary:  #1E293B;
-  --color-text-secondary:#64748B;
-  --color-text-sidebar:  #FFFFFF;
-  --color-border-card:   #E2E8EF;
-  --color-accent-primary:#378ADD;
-  --color-accent-secondary:#1D9E75;
-  --color-success:       #1D9E75;
-  --color-warning:       #EF9F27;
-  --color-critical:      #E24B4A;
-  --radius-card:         14px;
+  --color-bg-primary:    #D8C7A6;
+  --color-bg-card:       #F2EBDC;
+  --color-bg-sidebar:    #3E5F4D;
+  --color-text-primary:  #2D3E33;
+  --color-text-secondary:#4A5F53;
+  --color-text-sidebar:  #F2EBDC;
+  --color-border-card:   rgba(62, 95, 77, 0.15);
+  --color-accent-primary:#3E5F4D;
+  --color-accent-secondary:#5A826D;
+  --color-success:       #3E5F4D;
+  --color-warning:       #D9A66C;
+  --color-critical:      #A64D4D;
+  --radius-card:         12px;
 }
 
 /* ============================================
@@ -121,12 +121,18 @@ body {
   left: 0;
   width: 260px;
   height: 100vh;
-  background: #0F1E2E;
-  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  background: var(--color-bg-sidebar);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   z-index: 50;
   overflow-y: auto;
+  transition: background-color 0.3s ease;
+}
+
+.light .sidebar {
+  background: #3E5F4D;
+  border-right: 1px solid rgba(62, 95, 77, 0.1);
 }
 
 /* ── Logo ── */
@@ -316,9 +322,24 @@ body {
 
 /* Light mode navbar override */
 .light .navbar {
-  background: #FFFFFF;
-  border-bottom: 1px solid #E2E8EF;
-  box-shadow: 0 1px 0 #E2E8EF;
+  background: #3E5F4D;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.light .navbar-title {
+  color: #F2EBDC;
+}
+
+.light .navbar-icon-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #F2EBDC;
+}
+
+.light .navbar-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
 }
 
 .navbar-left {
@@ -610,10 +631,10 @@ body {
 }
 
 .light .crisis-card {
-  background: #FFFFFF;
-  border: 1px solid #E2E8EF;
-  border-radius: 14px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
+  background: #F2EBDC;
+  border: 1px solid rgba(62, 95, 77, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(62, 95, 77, 0.05), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .light .crisis-card:hover {

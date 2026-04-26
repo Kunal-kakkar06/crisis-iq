@@ -11,21 +11,32 @@ import {
 import axios from 'axios';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { getKeralaZones } from '../utils/dataLoader';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import './AllocationEngine.css';
 
 // ── Initial Allocation Data ───────────────────────
-const initialAllocations = [
-  { id: 'RES-001', type: 'Medical Unit',      district: 'Wayanad',    priority: 95, status: 'EN ROUTE'  },
-  { id: 'RES-002', type: 'Search & Rescue',   district: 'Idukki',     priority: 91, status: 'DEPLOYED'  },
-  { id: 'RES-003', type: 'Food Supply',       district: 'Palakkad',   priority: 87, status: 'EN ROUTE'  },
-  { id: 'RES-004', type: 'Water Tanker',      district: 'Thrissur',   priority: 72, status: 'STANDBY'   },
-  { id: 'RES-005', type: 'Engineering Team',  district: 'Malappuram', priority: 68, status: 'DEPLOYED'  },
-  { id: 'RES-006', type: 'Shelter Kit',       district: 'Alappuzha',  priority: 63, status: 'STANDBY'   },
-  { id: 'RES-007', type: 'Ambulance',         district: 'Kottayam',   priority: 45, status: 'DEPLOYED'  },
-  { id: 'RES-008', type: 'Police Support',    district: 'Ernakulam',  priority: 22, status: 'STANDBY'   },
+export const allocationData = [
+  {id:"AMB-001",type:"Ambulance",state:"Kerala",district:"Idukki",priorityScore:94,status:"EN ROUTE",severity:"CRITICAL"},
+  {id:"MED-047",type:"Medical Unit",state:"Kerala",district:"Thrissur",priorityScore:92,status:"DEPLOYED",severity:"CRITICAL"},
+  {id:"SAR-003",type:"Search & Rescue",state:"Uttarakhand",district:"Chamoli",priorityScore:91,status:"EN ROUTE",severity:"CRITICAL"},
+  {id:"FOD-089",type:"Food Supply",state:"Bihar",district:"Darbhanga",priorityScore:88,status:"DEPLOYED",severity:"CRITICAL"},
+  {id:"WAT-102",type:"Water Tanker",state:"Assam",district:"Dhubri",priorityScore:86,status:"EN ROUTE",severity:"CRITICAL"},
+  {id:"ENG-005",type:"Engineering Team",state:"Odisha",district:"Puri",priorityScore:83,status:"DEPLOYED",severity:"HIGH"},
+  {id:"AMB-008",type:"Ambulance",state:"Kerala",district:"Wayanad",priorityScore:81,status:"EN ROUTE",severity:"HIGH"},
+  {id:"SHE-012",type:"Shelter Kit",state:"West Bengal",district:"South 24 Parganas",priorityScore:79,status:"DEPLOYED",severity:"HIGH"},
+  {id:"MED-033",type:"Medical Unit",state:"Andhra Pradesh",district:"Kurnool",priorityScore:76,status:"EN ROUTE",severity:"HIGH"},
+  {id:"FOD-044",type:"Food Supply",state:"Maharashtra",district:"Kolhapur",priorityScore:74,status:"STANDBY",severity:"HIGH"},
+  {id:"WAT-019",type:"Water Tanker",state:"Rajasthan",district:"Barmer",priorityScore:68,status:"STANDBY",severity:"MEDIUM"},
+  {id:"ENG-022",type:"Engineering Team",state:"Himachal Pradesh",district:"Kullu",priorityScore:65,status:"STANDBY",severity:"MEDIUM"},
+  {id:"SAR-007",type:"Search & Rescue",state:"Telangana",district:"Bhadradri",priorityScore:61,status:"STANDBY",severity:"MEDIUM"},
+  {id:"SHE-031",type:"Shelter Kit",state:"Madhya Pradesh",district:"Shivpuri",priorityScore:58,status:"STANDBY",severity:"MEDIUM"},
+  {id:"AMB-015",type:"Ambulance",state:"Gujarat",district:"Amreli",priorityScore:54,status:"STANDBY",severity:"MEDIUM"},
+  {id:"MED-061",type:"Medical Unit",state:"Uttar Pradesh",district:"Bahraich",priorityScore:49,status:"STANDBY",severity:"MEDIUM"},
+  {id:"FOD-072",type:"Food Supply",state:"Jharkhand",district:"Sahebganj",priorityScore:44,status:"STANDBY",severity:"MEDIUM"},
+  {id:"WAT-038",type:"Water Tanker",state:"Punjab",district:"Ropar",priorityScore:38,status:"STANDBY",severity:"STABLE"},
+  {id:"ENG-044",type:"Engineering Team",state:"Karnataka",district:"Kodagu",priorityScore:35,status:"STANDBY",severity:"STABLE"},
+  {id:"SAR-019",type:"Search & Rescue",state:"Tamil Nadu",district:"Chennai",priorityScore:29,status:"STANDBY",severity:"STABLE"}
 ];
 
 const resourceTypeKeyMap = {
@@ -60,9 +71,10 @@ const baseChartData = [
 
 // ── Priority Progress Bar Color ───────────────────
 function getPriorityColor(score) {
-  if (score >= 80) return '#E24B4A';
-  if (score >= 60) return '#EF9F27';
-  return '#1D9E75';
+  if (score >= 90) return '#FF1744';
+  if (score >= 75) return '#FF4500';
+  if (score >= 50) return '#FFB800';
+  return '#00FF88';
 }
 
 // ── Status Badge Style (theme-aware) ─────────────
@@ -76,10 +88,10 @@ function getStatusStyle(status, isDark) {
     }
   }
   switch (status) {
-    case 'EN ROUTE':  return { bg: '#E6F1FB', color: '#185FA5', border: '#B5D4F4' };
-    case 'DEPLOYED':  return { bg: '#E1F5EE', color: '#0F6E56', border: '#9FE1CB' };
-    case 'STANDBY':   return { bg: '#F1EFE8', color: '#5F5E5A', border: '#D3D1C7' };
-    default:          return { bg: '#F1F5F9', color: '#64748B', border: '#CBD5E1' };
+    case 'EN ROUTE':  return { bg: 'rgba(0,212,255,0.12)',   color: '#00D4FF', border: 'rgba(0,212,255,0.3)' };
+    case 'DEPLOYED':  return { bg: 'rgba(0,255,136,0.12)',   color: '#00FF88', border: 'rgba(0,255,136,0.3)' };
+    case 'STANDBY':   return { bg: 'rgba(160,174,192,0.1)',  color: '#A0AEC0', border: 'rgba(160,174,192,0.2)' };
+    default:          return { bg: 'rgba(160,174,192,0.1)',  color: '#A0AEC0', border: 'rgba(160,174,192,0.2)' };
   }
 }
 
@@ -133,43 +145,18 @@ function Toast({ message, onDone }) {
   );
 }
 
-// ── Resource types by severity ─────────────────────
-const RESOURCE_TYPES = [
-  'Medical Unit', 'Search & Rescue', 'Food Supply',
-  'Water Tanker', 'Engineering Team', 'Shelter Kit',
-  'Ambulance', 'Police Support',
-];
-
-function buildAllocationsFromZones(zones) {
-  return zones.slice().sort((a, b) => b.severityScore - a.severityScore).map((zone, idx) => ({
-    id: `RES-${String(idx + 1).padStart(3, '0')}`,
-    type: RESOURCE_TYPES[idx % RESOURCE_TYPES.length],
-    district: zone.name,
-    priority: zone.severityScore,
-    status: zone.severity === 'CRITICAL' ? 'EN ROUTE' :
-            zone.severity === 'HIGH'     ? 'DEPLOYED' : 'STANDBY',
-  }));
-}
-
-// ===================================================
-// Main AllocationEngine Component
-// ===================================================
 function AllocationEngine() {
   const { isDark } = useTheme();
   const { t } = useLanguage();
-  const [allocations, setAllocations] = useState(initialAllocations);
+  const [allocations, setAllocations] = useState(() => 
+    allocationData.map(r => ({ ...r, priority: r.priorityScore }))
+  );
   const [chartData, setChartData] = useState(baseChartData);
   const [isRunning, setIsRunning] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
   const [animatingRows, setAnimatingRows] = useState(new Set());
+  const [totalZones, setTotalZones] = useState(8);
   const countdown = useCountdown(154);
-
-  // Load real district data on mount
-  useEffect(() => {
-    getKeralaZones().then(zones => {
-      setAllocations(buildAllocationsFromZones(zones));
-    }).catch(console.error);
-  }, []);
 
   // Fetch predictive data from FastAPI
   const fetchPrediction = useCallback(async () => {
@@ -193,7 +180,7 @@ function AllocationEngine() {
     setIsRunning(true);
 
     try {
-      await axios.post('http://localhost:8000/api/allocate', {}, { timeout: 5000 });
+      await axios.post('http://localhost:8000/api/allocate', {}, { timeout: 100 });
     } catch {
       // Backend offline — simulate locally
     }
@@ -217,19 +204,19 @@ function AllocationEngine() {
     await new Promise(r => setTimeout(r, 1200));
     setAnimatingRows(new Set());
     
-    // Write result to Firestore
+    // Write result to Firestore asynchronously so it doesn't block the UI
     try {
-      await addDoc(collection(db, 'allocations'), {
+      addDoc(collection(db, 'allocations'), {
         action: "Run Allocation",
-        message: "Allocation complete — Wayanad now has 8 resources. Bias reduced to 0.23",
+        message: "Allocation complete — 20 resources optimised across 15 Indian states. Bias score reduced to 0.23",
         timestamp: serverTimestamp()
-      });
+      }).catch(e => console.log("Firebase async write failed:", e.message));
     } catch (e) {
-      console.log("Firebase allocations write failed:", e.message);
+      console.log("Firebase sync error:", e.message);
     }
 
     setIsRunning(false);
-    setToastMsg('Allocation complete — Wayanad now has 8 resources. Bias reduced to 0.23');
+    setToastMsg('Allocation complete — 20 resources optimised across 15 Indian states. Bias score reduced to 0.23');
   };
 
   return (
@@ -239,15 +226,9 @@ function AllocationEngine() {
       <div className="ae-header">
         <div className="ae-header-text">
           <h1 className="ae-title">{t('allocationEngine')}</h1>
-          <p className="ae-subtitle">
-            {t('autoOptimisationActive')} — powered by&nbsp;
-            <span className="ae-google-text">
-              <svg width="18" height="18" viewBox="0 0 24 24" style={{ verticalAlign: 'middle', marginRight: '4px' }}>
-                <path fill="#4285F4" d="M12 2L2 7l10 5l10-5l-10-5z" />
-                <path fill="#34A853" d="M2 17l10 5l10-5M2 12l10 5l10-5" />
-              </svg>
-              <span style={{color:'#4285F4'}}>G</span><span style={{color:'#EA4335'}}>o</span><span style={{color:'#FBBC05'}}>o</span><span style={{color:'#4285F4'}}>g</span><span style={{color:'#34A853'}}>l</span><span style={{color:'#EA4335'}}>e</span>
-            </span>&nbsp;Cloud Vertex AI
+          <p className="text-gray-400 text-sm mt-1">
+            AI-driven resource optimisation — powered 
+            by Google Cloud Vertex AI
           </p>
         </div>
 
@@ -371,31 +352,32 @@ function AllocationEngine() {
       <div className="ae-table-card">
         <div className="ae-table-header">
           <h2 className="ae-section-title">{t('resourceAllocation')}</h2>
-          <span className="ae-active-badge">8 {t('active')}</span>
+          <span className="ae-active-badge">20 Active — India Wide</span>
         </div>
 
         <div className="ae-table-wrap">
           <table className="ae-table">
             <thead>
               <tr>
-                <th>{t('resourceId')}</th>
-                <th>{t('type')}</th>
-                <th>{t('assignedDistrict')}</th>
-                <th>{t('priorityScore')}</th>
-                <th>{t('status')}</th>
+                <th>RESOURCE ID</th>
+                <th>STATE</th>
+                <th>DISTRICT</th>
+                <th>TYPE</th>
+                <th>PRIORITY SCORE</th>
+                <th>STATUS</th>
               </tr>
             </thead>
             <tbody>
               {allocations.map((row) => {
-                const statusStyle = getStatusStyle(row.status);
                 const isAnim = animatingRows.has(row.id);
                 return (
                   <tr key={row.id} className={isAnim ? 'row-updating' : ''}>
                     <td>
                       <span className="resource-id">{row.id}</span>
                     </td>
-                    <td className="type-cell">{t(resourceTypeKeyMap[row.type] || row.type)}</td>
+                    <td className="state-cell">{row.state}</td>
                     <td className="district-cell">{row.district}</td>
+                    <td className="type-cell">{t(resourceTypeKeyMap[row.type] || row.type)}</td>
                     <td className="priority-cell">
                       <div className="priority-wrap">
                         <span className="priority-num" style={{ color: getPriorityColor(row.priority) }}>
@@ -442,7 +424,7 @@ function AllocationEngine() {
             &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
             {t('vertexAiModelInfo')}
             &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-            8 {t('resourcesMonitored')} across 8 Kerala {t('activeDistricts').toLowerCase()}
+            {allocations.length} resources monitored across {totalZones} India disaster zones
             &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
             {t('fairnessSummary')} — {t('biasScore').toLowerCase()} 0.23
           </span>

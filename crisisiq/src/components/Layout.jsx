@@ -6,6 +6,7 @@ import { NavLink, useLocation, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useAppContext } from '../context/AppContext';
 import DemoMode from './DemoMode';
 import NotificationPanel from './NotificationPanel';
 import SettingsPanel from './SettingsPanel';
@@ -101,7 +102,7 @@ function Layout({ children }) {
   const { isDark, toggleTheme } = useTheme();
   const { t, language, currentLang } = useLanguage();
   const location = useLocation();
-  const [fairnessEnabled, setFairnessEnabled] = useState(true);
+  const { fairnessEnabled, setFairnessEnabled, crisisActive, setCrisisActive } = useAppContext();
   const [demoModeEnabled, setDemoModeEnabled] = useState(false);
   const [isFirebaseConnected, setIsFirebaseConnected] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -200,10 +201,12 @@ function Layout({ children }) {
           </div>
 
           <div className="navbar-center" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div className="crisis-badge">
-              <span className="crisis-dot"></span>
-              <span>⚠ {t('crisisModeActive').toUpperCase()}</span>
-            </div>
+            {crisisActive && (
+              <div className="crisis-badge">
+                <span className="crisis-dot"></span>
+                <span>⚠ {t('crisisModeActive').toUpperCase()}</span>
+              </div>
+            )}
             <button 
               className="btn-demo" 
               style={{ 
@@ -228,8 +231,13 @@ function Layout({ children }) {
           </div>
 
           <div className="navbar-right">
-            <button className="btn-deactivate" id="btn-deactivate-crisis">
-              {t('deactivateCrisis')}
+            <button 
+              className={`btn-deactivate ${!crisisActive ? 'btn-activate' : ''}`} 
+              id="btn-deactivate-crisis"
+              onClick={() => setCrisisActive(!crisisActive)}
+              style={{ background: !crisisActive ? 'rgba(0, 255, 136, 0.15)' : '', color: !crisisActive ? '#00FF88' : '', border: !crisisActive ? '1px solid #00FF88' : '' }}
+            >
+              {crisisActive ? t('deactivateCrisis') : 'Activate Crisis'}
             </button>
 
             <button
