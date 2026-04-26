@@ -7,11 +7,19 @@ CrisisIQ is a real-time disaster management platform designed to optimize the al
 
 ---
 
+### 🌟 Latest Updates (Branch: `latest-update`)
+- **India-Wide National Scope:** The platform has been expanded from a Kerala-only pilot to a comprehensive **National Response System** covering 20 key states across India.
+- **Enhanced Fairness Analytics:** New visualization layers for India-wide bias detection, including Population Density vs. Resource correlation charts and state-level severity scoring.
+- **Secure Authentication Layer:** Integrated a modern, glassmorphic Firebase Login system with protected dashboard routes and session persistence.
+- **Optimized Allocation Engine:** Performance-tuned allocation logic with 100ms fail-fast cycles for high-pressure emergency simulation.
+
+---
+
 ## 🚀 Google Technologies Used
 
 *   **Google Maps Platform:** Interactive map layers, real-time Resource Request Densities (Heatmaps), Places Autocomplete API, and accurate automated driver route rendering via Directions API.
 *   **Google Cloud Vertex AI:** Predicts resource needs based on regional severity, real-time demand, and dynamic variables.
-*   **Google Firebase (Firestore):** Provides real-time synchronization between citizen requests, transparency audit logs, and command dashboards.
+*   **Google Firebase (Authentication & Firestore):** Secure session management and real-time synchronization between citizen requests and command dashboards.
 *   **Google Cloud Translation:** Automatic UI-language translation to support seamless collaboration localized for regional contexts.
 *   **Google Cloud Speech-to-Text & Vision API:** Processing asynchronous citizen multimedia distress submissions natively in regional dialects.
 
@@ -39,6 +47,10 @@ CrisisIQ is a real-time disaster management platform designed to optimize the al
     ```bash
     npm run dev
     ```
+6.  **Login Credentials (Demo Mode)**
+    Use these credentials to access the dashboard:
+    *   **Email:** `admin@crisisiq.gov.in`
+    *   **Password:** `crisis123`
 
 ## 🌍 Live Demo
 *App preview coming soon!* — [Hosted on Firebase]()
