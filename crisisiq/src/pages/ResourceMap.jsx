@@ -23,7 +23,7 @@ import {
   GOOGLE_MAPS_ID,
 } from '../config/googleMaps';
 import { getKeralaZones, getIndiaDisasterZones } from '../utils/dataLoader';
-import { getWeatherForCity } from '../services/weatherService';
+import { getWeatherForAllZones } from '../services/weatherService';
 import indiaMapImg from '../assets/india_fallback_map.png';
 import keralaMapImg from '../assets/kerala_demo_map.png';
 import { useTheme } from '../context/ThemeContext';
@@ -124,27 +124,35 @@ function ResourceMap() {
     getIndiaDisasterZones().then(zones => setIndiaZones(zones)).catch(console.error);
   }, []);
 
-  // Fetch weather data
+  // Fetch weather data (staggered to avoid rate limits)
   useEffect(() => {
     const fetchAllWeather = async () => {
       try {
-        const weatherPromises = weatherZonesConfig.map(
-          zone => getWeatherForCity(zone.lat, zone.lng)
-            .then(w => ({...zone, weather: w}))
-            .catch(() => ({...zone, weather: null, error: true}))
-        );
-        const results = await Promise.all(weatherPromises);
+        const results = await getWeatherForAllZones(weatherZonesConfig);
         
-        const allFailed = results.every(r => r.weather === null);
-        if (allFailed) {
+        const successCount = results.filter(r => r.weather !== null).length;
+        if (successCount === 0) {
           setWeatherApiError(true);
+          // Fallback data covering all India
           const fallbackData = [
             {...weatherZonesConfig.find(z => z.id === 'WYD'), weather: { humidity: 89, temp: 24, description: 'Heavy Rain', rainfall: 12, windSpeed: 28 }},
             {...weatherZonesConfig.find(z => z.id === 'IDK'), weather: { humidity: 92, temp: 22, description: 'Extreme Rain', rainfall: 15, windSpeed: 25 }},
             {...weatherZonesConfig.find(z => z.id === 'PKD'), weather: { humidity: 78, temp: 26, description: 'Moderate Rain', rainfall: 5, windSpeed: 15 }},
-            {...weatherZonesConfig.find(z => z.id === 'TSR'), weather: { humidity: 76, temp: 25, description: 'Moderate Rain', rainfall: 4, windSpeed: 18 }}
+            {...weatherZonesConfig.find(z => z.id === 'TSR'), weather: { humidity: 76, temp: 25, description: 'Moderate Rain', rainfall: 4, windSpeed: 18 }},
+            {...weatherZonesConfig.find(z => z.id === 'MUM'), weather: { humidity: 82, temp: 30, description: 'Heavy Rain', rainfall: 8, windSpeed: 22 }},
+            {...weatherZonesConfig.find(z => z.id === 'DEL'), weather: { humidity: 55, temp: 38, description: 'Clear', rainfall: 0, windSpeed: 12 }},
+            {...weatherZonesConfig.find(z => z.id === 'KOL'), weather: { humidity: 88, temp: 32, description: 'Rain', rainfall: 10, windSpeed: 20 }},
+            {...weatherZonesConfig.find(z => z.id === 'CHN'), weather: { humidity: 80, temp: 33, description: 'Partly Cloudy', rainfall: 2, windSpeed: 15 }},
+            {...weatherZonesConfig.find(z => z.id === 'BGL'), weather: { humidity: 65, temp: 27, description: 'Mostly Clear', rainfall: 0, windSpeed: 10 }},
+            {...weatherZonesConfig.find(z => z.id === 'HYD'), weather: { humidity: 60, temp: 35, description: 'Cloudy', rainfall: 1, windSpeed: 14 }},
+            {...weatherZonesConfig.find(z => z.id === 'AHM'), weather: { humidity: 45, temp: 40, description: 'Clear', rainfall: 0, windSpeed: 8 }},
+            {...weatherZonesConfig.find(z => z.id === 'PAT'), weather: { humidity: 75, temp: 34, description: 'Rain', rainfall: 6, windSpeed: 18 }},
+            {...weatherZonesConfig.find(z => z.id === 'GHW'), weather: { humidity: 90, temp: 28, description: 'Heavy Rain', rainfall: 14, windSpeed: 25 }},
+            {...weatherZonesConfig.find(z => z.id === 'BHB'), weather: { humidity: 85, temp: 31, description: 'Rain', rainfall: 9, windSpeed: 30 }},
+            {...weatherZonesConfig.find(z => z.id === 'SML'), weather: { humidity: 70, temp: 18, description: 'Light Rain', rainfall: 3, windSpeed: 20 }},
+            {...weatherZonesConfig.find(z => z.id === 'SRN'), weather: { humidity: 60, temp: 15, description: 'Cloudy', rainfall: 1, windSpeed: 12 }},
           ];
-          setWeatherData(fallbackData.filter(x => x.name));
+          setWeatherData(fallbackData.filter(x => x && x.name));
         } else {
           setWeatherApiError(false);
           setWeatherData(results.filter(r => r.weather !== null));
