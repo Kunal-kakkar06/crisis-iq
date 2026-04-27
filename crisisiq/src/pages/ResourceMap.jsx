@@ -27,6 +27,9 @@ import { getKeralaZones, getIndiaDisasterZones } from '../utils/dataLoader';
 import { getWeatherForAllZones } from '../services/weatherService';
 import indiaMapImg from '../assets/india_fallback_map.png';
 import keralaMapImg from '../assets/kerala_demo_map.png';
+import disasterFlood from '../assets/disaster_flood.png';
+import disasterLandslide from '../assets/disaster_landslide.png';
+import disasterCyclone from '../assets/disaster_cyclone.png';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import './ResourceMap.css';
@@ -95,6 +98,16 @@ function ResourceMap() {
   const location = useLocation();
   const [selectedZone, setSelectedZone] = useState(null);
   const [directionsResponse, setDirectionsResponse] = useState(null);
+
+  const getDisasterImage = (zone) => {
+    if (!zone) return disasterFlood;
+    if (zone.isKerala) return disasterFlood;
+    const type = zone.disasterType || '';
+    if (type.includes('Flood')) return disasterFlood;
+    if (type.includes('Landslide') || type.includes('Earthquake')) return disasterLandslide;
+    if (type.includes('Cyclone') || type.includes('Storm')) return disasterCyclone;
+    return disasterFlood;
+  };
   const [activeType, setActiveType] = useState('All');
   const [activeSeverity, setActiveSeverity] = useState('All');
   const [activeDistrict, setActiveDistrict] = useState('All');
@@ -224,11 +237,9 @@ function ResourceMap() {
   }, [location.state, indiaZones, navigate]);
 
   // Load Maps with visualization + places libraries
-  const { isLoaded, loadError } = useJsApiLoader({
-    id: GOOGLE_MAPS_ID,
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-    libraries: GOOGLE_MAPS_LIBRARIES,
-  });
+  // Google Maps state (handled by root loader in App.jsx)
+  const { mapLoaded: isLoaded } = useAppContext();
+  const loadError = null;
 
   // Calculate route from Ernakulam Depot (STABLE) to Wayanad (CRITICAL)
   const calculateRoute = async () => {
@@ -484,7 +495,7 @@ function ResourceMap() {
         {/* Kerala Zone Markers — sized by severity score */}
         {filteredZones.map((zone) => {
           const svgMarker = {
-            path: window.google.maps.SymbolPath.CIRCLE,
+            path: isLoaded && window.google ? window.google.maps.SymbolPath.CIRCLE : null,
             fillColor: zone.color,
             fillOpacity: 1,
             strokeWeight: 2,
@@ -507,12 +518,12 @@ function ResourceMap() {
           <MarkerF
             key={`hosp-${idx}`}
             position={{ lat: h.lat, lng: h.lng }}
-            icon={{ url: HOSPITAL_ICON, scaledSize: window.google ? new window.google.maps.Size(18, 18) : null }}
+            icon={{ url: HOSPITAL_ICON, scaledSize: isLoaded && window.google ? new window.google.maps.Size(18, 18) : null }}
             title={`${h.name} — ${h.districtName}`}
           />
         ))}
 
-        {/* Info Window — Kerala or India */}
+        {/* Info Window — Synchronized with Dashboard */}
         {selectedZone && (
           <InfoWindowF
             position={{ lat: selectedZone.lat, lng: selectedZone.lng }}
@@ -520,6 +531,15 @@ function ResourceMap() {
             options={{ maxWidth: 320 }}
           >
             <div className="dark-info-window">
+              <div className="diw-image-header" style={{ width: 'calc(100% + 24px)', margin: '-12px -12px 12px -12px', height: '140px', overflow: 'hidden', position: 'relative' }}>
+                <img 
+                  src={getDisasterImage(selectedZone)} 
+                  alt="Disaster Area" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%', background: 'linear-gradient(to top, #0D1B2A, transparent)' }}></div>
+              </div>
+
               <h3 className="diw-title">{selectedZone.name}</h3>
               <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
                 <span 
@@ -527,36 +547,83 @@ function ResourceMap() {
                   style={{ 
                     backgroundColor: `${selectedZone.color}22`,
                     color: selectedZone.color,
-                    border: `1px solid ${selectedZone.color}55`
+                    border: `1px solid ${selectedZone.color}55`,
+                    padding: '3px 10px',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    fontWeight: 700
                   }}
                 >
-                  {selectedZone.severity} — {selectedZone.severityScore?.toFixed(1)}
+                  {selectedZone.severity}
                 </span>
+                {!selectedZone.isIndia && (
+                  <span style={{ background: 'rgba(255,255,255,0.1)', color: '#A0AEC0', fontSize: '10px', padding: '3px 10px', borderRadius: '10px', fontWeight: 600 }}>
+                    🌊 Kerala 2018
+                  </span>
+                )}
                 {selectedZone.isIndia && selectedZone.disasterType && (
-                  <span style={{ background: `${selectedZone.color}18`, color: selectedZone.color, fontSize: '10px', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
+                  <span style={{ background: `${selectedZone.color}18`, color: selectedZone.color, fontSize: '10px', padding: '3px 10px', borderRadius: '10px', fontWeight: 600 }}>
                     {selectedZone.disasterType}
                   </span>
                 )}
               </div>
-              <div className="diw-stats">
+
+              <div className="diw-stats" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {selectedZone.isIndia ? (
                   <>
-                    <div className="diw-row"><span className="diw-label">Deaths:</span><span className="diw-value">{(selectedZone.deaths || 0).toLocaleString()}</span></div>
-                    <div className="diw-row"><span className="diw-label">Affected:</span><span className="diw-value">{(selectedZone.affected || 0).toLocaleString()}</span></div>
-                    <div className="diw-row"><span className="diw-label">Events (1980+):</span><span className="diw-value">{selectedZone.count} disasters</span></div>
-                    <div className="diw-row"><span className="diw-label">Latest Year:</span><span className="diw-value">{selectedZone.year}</span></div>
+                    <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                      <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Deaths:</span>
+                      <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.deaths || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                      <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Affected:</span>
+                      <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.affected || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                      <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Events (1980+):</span>
+                      <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{selectedZone.count} disasters</span>
+                    </div>
                   </>
                 ) : (
                   <>
-                    <div className="diw-row"><span className="diw-label">{t('totalFatalities')}:</span><span className="diw-value">{selectedZone.fatalities ?? 'N/A'}</span></div>
-                    <div className="diw-row"><span className="diw-label">{t('rainfallExcess')}:</span><span className="diw-value">{selectedZone.rainfallDeviation?.toFixed(0) ?? 'N/A'} mm</span></div>
-                    <div className="diw-row"><span className="diw-label">{t('landslides')}:</span><span className="diw-value">{selectedZone.landslides ?? 'N/A'}</span></div>
-                    <div className="diw-row"><span className="diw-label">{t('nearestHospital')}:</span><span className="diw-value">{selectedZone.hospitals?.[0]?.name?.slice(0, 28) || 'No data'}</span></div>
-                    <div className="diw-row"><span className="diw-label">{t('reliefCamps')}:</span><span className="diw-value">{selectedZone.reliefCamps ?? 'N/A'}</span></div>
+                    <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                      <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>{t('totalFatalities')}:</span>
+                      <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{selectedZone.fatalities ?? 0}</span>
+                    </div>
+                    <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                      <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>{t('reliefCamps')}:</span>
+                      <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{selectedZone.reliefCamps ?? 0}</span>
+                    </div>
+                    <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                      <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>{t('landslides')}:</span>
+                      <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{selectedZone.landslides ?? 0}</span>
+                    </div>
                   </>
                 )}
+                <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                  <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Severity Score:</span>
+                  <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.severityScore || 0).toFixed(1)} / 100</span>
+                </div>
               </div>
-              <a className="diw-link" href="#" onClick={(e) => e.preventDefault()}>{t('viewDetails')} →</a>
+              <button 
+                className="diw-link" 
+                style={{ 
+                  width: '100%', 
+                  marginTop: '16px', 
+                  padding: '10px', 
+                  background: 'rgba(0, 212, 255, 0.1)', 
+                  border: '1px solid #00D4FF', 
+                  color: '#00D4FF',
+                  borderRadius: '6px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontSize: '13px'
+                }}
+                onClick={() => setSelectedZone(null)}
+              >
+                {t('viewDetails')} →
+              </button>
             </div>
           </InfoWindowF>
         )}

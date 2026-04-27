@@ -220,16 +220,28 @@ export default function NotificationPanel({ onUnreadChange }) {
         aria-label="Notifications"
         onClick={() => setOpen(o => !o)}
         style={{
-          border: open ? '1px solid rgba(255,69,0,0.5)' : undefined,
-          background: open ? 'rgba(255,69,0,0.1)' : undefined,
+          background: open ? 'rgba(255, 69, 0, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+          border: open ? '2px solid #FF4500' : '1px solid rgba(255, 255, 255, 0.2)',
+          color: open ? '#FF4500' : '#FFFFFF',
+          borderRadius: '8px',
+          padding: '8px',
+          boxShadow: open ? '0 0 12px rgba(255, 69, 0, 0.4)' : 'none',
+          transition: 'all 0.2s',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
           <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
         {unreadCount > 0 && (
-          <span className="notification-badge">
+          <span className="notification-badge" style={{
+            background: '#FF1744',
+            color: '#fff',
+            boxShadow: '0 0 8px rgba(255, 23, 68, 0.6)'
+          }}>
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}

@@ -2,7 +2,7 @@
 // CrisisIQ — Global Layout (Sidebar + Navbar)
 // ============================================
 
-import { NavLink, useLocation, Link } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -10,6 +10,7 @@ import { useAppContext } from '../context/AppContext';
 import DemoMode from './DemoMode';
 import NotificationPanel from './NotificationPanel';
 import SettingsPanel from './SettingsPanel';
+import GeminiChat from './GeminiChat';
 import { rtdb } from '../firebase';
 import { ref, onValue } from 'firebase/database';
 
@@ -144,27 +145,34 @@ function Layout({ children }) {
       {/* ── SIDEBAR ── */}
       <aside className="sidebar">
         {/* Logo */}
-        <Link to="/dashboard" className="sidebar-logo">
+        <a href="/dashboard" className="sidebar-logo" style={{ textDecoration: 'none' }}>
           <div className="logo-icon">
             <span>CQ</span>
           </div>
           <span className="logo-text">CrisisIQ</span>
-        </Link>
+        </a>
 
         {/* Navigation */}
         <nav className="sidebar-nav">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `nav-link ${isActive ? 'nav-link-active' : ''}`
-              }
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <span className="nav-label">{t(navLabelKeys[item.label] || 'dashboard')}</span>
-            </NavLink>
-          ))}
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <a
+                key={item.path}
+                href={item.path}
+                className="nav-link"
+                style={{
+                  borderLeft: isActive ? '3px solid #00D4FF' : '3px solid transparent',
+                  background: isActive ? 'rgba(0,212,255,0.1)' : 'transparent',
+                  color: isActive ? '#00D4FF' : '#9CA3AF',
+                  textDecoration: 'none'
+                }}
+              >
+                <span className="nav-icon">{item.icon}</span>
+                <span className="nav-label">{t(navLabelKeys[item.label] || 'dashboard')}</span>
+              </a>
+            );
+          })}
         </nav>
 
         {/* Bottom Section */}
@@ -197,7 +205,7 @@ function Layout({ children }) {
         {/* Navbar */}
         <header className="navbar">
           <div className="navbar-left">
-            <h1 className="navbar-title">{currentTitle}</h1>
+            {/* Title removed per user request */}
           </div>
 
           <div className="navbar-center" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -210,22 +218,25 @@ function Layout({ children }) {
             <button 
               className="btn-demo" 
               style={{ 
-                background: 'rgba(0, 212, 255, 0.15)', 
-                border: '1px solid #00D4FF', 
-                color: '#00D4FF', 
-                padding: '6px 14px', 
-                borderRadius: '6px',
+                background: 'rgba(0, 212, 255, 0.25)', 
+                border: '2px solid #00D4FF', 
+                color: '#FFFFFF', 
+                padding: '6px 16px', 
+                borderRadius: '8px',
                 fontSize: '13px',
-                fontWeight: '700',
+                fontWeight: '800',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '8px',
                 cursor: 'pointer',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                boxShadow: '0 0 15px rgba(0, 212, 255, 0.3)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
               }}
               onClick={() => setDemoModeEnabled(true)}
             >
-              <span style={{ fontSize: '12px' }}>▶</span>
+              <span style={{ fontSize: '12px', color: '#00D4FF' }}>▶</span>
               {t('demoMode')}
             </button>
           </div>
@@ -235,7 +246,17 @@ function Layout({ children }) {
               className={`btn-deactivate ${!crisisActive ? 'btn-activate' : ''}`} 
               id="btn-deactivate-crisis"
               onClick={() => setCrisisActive(!crisisActive)}
-              style={{ background: !crisisActive ? 'rgba(0, 255, 136, 0.15)' : '', color: !crisisActive ? '#00FF88' : '', border: !crisisActive ? '1px solid #00FF88' : '' }}
+              style={{ 
+                background: crisisActive ? 'rgba(255, 23, 68, 0.2)' : 'rgba(0, 255, 136, 0.2)', 
+                color: crisisActive ? '#FF1744' : '#00FF88', 
+                border: `2px solid ${crisisActive ? '#FF1744' : '#00FF88'}`,
+                padding: '6px 16px',
+                borderRadius: '8px',
+                fontWeight: '800',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                boxShadow: `0 0 15px ${crisisActive ? 'rgba(255, 23, 68, 0.3)' : 'rgba(0, 255, 136, 0.3)'}`
+              }}
             >
               {crisisActive ? t('deactivateCrisis') : 'Activate Crisis'}
             </button>
@@ -257,17 +278,25 @@ function Layout({ children }) {
               id="btn-settings"
               aria-label="Settings"
               onClick={() => setSettingsOpen(true)}
-              style={{ position: 'relative' }}
+              style={{ 
+                position: 'relative',
+                color: '#FFFFFF',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '8px',
+                padding: '8px'
+              }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="3" />
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
               </svg>
               {language !== 'en' && (
                 <span style={{
-                  position: 'absolute', top: '-6px', right: '-8px',
-                  background: '#378ADD', color: '#fff', fontSize: '9px', fontWeight: 700,
-                  padding: '2px 5px', borderRadius: '4px', lineHeight: 1.2,
+                  position: 'absolute', top: '-4px', right: '-4px',
+                  background: '#00D4FF', color: '#000', fontSize: '9px', fontWeight: 900,
+                  padding: '2px 4px', borderRadius: '4px', lineHeight: 1.2,
+                  boxShadow: '0 0 8px rgba(0, 212, 255, 0.5)'
                 }}>{currentLang.code.toUpperCase()}</span>
               )}
             </button>
@@ -276,7 +305,18 @@ function Layout({ children }) {
             <button 
               onClick={toggleTheme}
               className="navbar-icon-btn" 
-              style={{ padding: '6px', fontSize: '16px' }}
+              style={{ 
+                padding: '8px', 
+                fontSize: '18px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+                color: '#FFFFFF'
+              }}
               aria-label="Toggle Theme"
             >
               {isDark ? '☀️' : '🌙'}
@@ -294,7 +334,7 @@ function Layout({ children }) {
         </header>
 
         {/* Page Content */}
-        <main className="page-content" style={{ display: 'flex', flexDirection: 'column' }}>
+        <main key={location.pathname} className="page-content" style={{ display: 'flex', flexDirection: 'column' }}>
           {!isFirebaseConnected && (
             <div className={isDark ? 'demo-banner-dark' : 'demo-banner-light'} style={{
               backgroundColor: isDark ? 'rgba(255, 184, 0, 0.15)' : '#FFFBEB',
@@ -325,6 +365,9 @@ function Layout({ children }) {
 
       {/* ── Settings Panel ── */}
       {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}
+
+      {/* ── Gemini AI Assistant ── */}
+      <GeminiChat />
     </div>
   );
 }

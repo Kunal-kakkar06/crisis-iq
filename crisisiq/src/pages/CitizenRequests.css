@@ -539,6 +539,72 @@
   font-size: 15px !important;
 }
 
+.cr-textarea-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.cr-textarea-input {
+  width: 100%;
+  padding: 14px 44px 14px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 15px;
+  outline: none;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.cr-textarea-input:focus {
+  border-color: #00D4FF;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+}
+
+.cr-mic-btn {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #00D4FF;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cr-mic-btn:hover {
+  background: rgba(0, 212, 255, 0.2);
+}
+
+.cr-mic-btn.recording {
+  background: rgba(255, 23, 68, 0.2);
+  color: #FF1744;
+}
+
+.cr-recording-pulse {
+  width: 12px;
+  height: 12px;
+  background-color: #FF1744;
+  border-radius: 50%;
+  animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-red {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(255, 23, 68, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 23, 68, 0); }
+}
+
 .cr-btn-submit {
   width: 100%;
   background: #FF1744;
@@ -673,6 +739,10 @@
 .light .cr-modal-content p { color: #4A5F53; }
 .light .cr-autocomplete-input { background: #EBE3D3; border-color: rgba(62, 95, 77, 0.1); color: #2D3E33; }
 .light .cr-autocomplete-input:focus { border-color: #3E5F4D; box-shadow: 0 0 0 3px rgba(62, 95, 77, 0.1); }
+.light .cr-textarea-input { background: #EBE3D3; border-color: rgba(62, 95, 77, 0.1); color: #2D3E33; }
+.light .cr-textarea-input:focus { border-color: #3E5F4D; box-shadow: 0 0 0 3px rgba(62, 95, 77, 0.1); }
+.light .cr-mic-btn { background: rgba(62, 95, 77, 0.1); color: #3E5F4D; }
+.light .cr-mic-btn:hover { background: rgba(62, 95, 77, 0.2); }
 .light .cr-btn-cancel { border-color: rgba(62, 95, 77, 0.1); color: #4A5F53; }
 .light .cr-btn-cancel:hover { background: #EBE3D3; color: #2D3E33; }
 .light .cr-btn-close { background: #EBE3D3; border-color: rgba(62, 95, 77, 0.1); color: #2D3E33; }

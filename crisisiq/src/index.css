@@ -55,7 +55,9 @@
 
 body {
   font-family: var(--font-family-inter);
+  background-color: #050A14; /* Default dark fallback */
   background-color: var(--color-bg-primary);
+  color: #FFFFFF; /* Default dark fallback */
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -411,7 +413,23 @@ body {
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+}
+
+.light .navbar-icon-btn {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  color: #1E293B !important;
+}
+
+.light .navbar-icon-btn:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+.dark .navbar-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
 }
 
 /* Deactivate Button */
@@ -471,7 +489,11 @@ body {
 .btn-fairness-off {
   background: rgba(160, 174, 192, 0.1);
   border-color: rgba(160, 174, 192, 0.25);
-  color: var(--color-text-secondary);
+  color: #4A5568; /* Dimmer for light mode */
+}
+
+.dark .btn-fairness-off {
+  color: #FFFFFF; /* Bright for dark mode */
 }
 
 /* Demo Mode button */

@@ -1,5 +1,14 @@
 {
   "projects": {
     "default": "crisisiq-6a292"
+  },
+  "targets": {
+    "crisisiq-6a292": {
+      "hosting": {
+        "crisisiq-platform": [
+          "crisisiq-platform"
+        ]
+      }
+    }
   }
 }

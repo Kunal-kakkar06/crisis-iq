@@ -4,11 +4,14 @@
 // =====================================================
 
 import { useState, useCallback, useMemo, useRef, memo, useEffect } from 'react';
-import { GoogleMap, useJsApiLoader, HeatmapLayerF, CircleF, Autocomplete } from '@react-google-maps/api';
+import { useSearchParams } from 'react-router-dom';
+import { GoogleMap, useJsApiLoader, HeatmapLayerF, CircleF, MarkerF, InfoWindowF } from '@react-google-maps/api';
 import { darkMapStyle, GOOGLE_MAPS_ID, GOOGLE_MAPS_LIBRARIES } from '../config/googleMaps';
 import { getIndiaDisasterZones } from '../utils/dataLoader';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useAppContext } from '../context/AppContext';
+import SOSModal from '../components/SOSModal';
 import './CitizenRequests.css';
 
 // ── Mock Data ─────────────────────────────────────────
@@ -31,17 +34,23 @@ const INDIA_EXTRA_REQUESTS = [
 ];
 
 
-export default memo(function CitizenRequests() {
+export default function CitizenRequests() {
+  console.log("[CitizenRequests] Rendering component...");
   const { isDark } = useTheme();
   const { t } = useLanguage();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [requests, setRequests] = useState([...initialRequests, ...INDIA_EXTRA_REQUESTS]);
   const [filter, setFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sosModalVisible, setSosModalVisible] = useState(false);
-  const [sosStatus, setSosStatus] = useState('idle');
+  const [sosOpen, setSosOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
-  const [sosLocation, setSosLocation] = useState('');
   const [indiaZones, setIndiaZones] = useState([]);
+  const [mapCenter, setMapCenter] = useState({ lat: 20.5, lng: 78.5 });
+  const [mapZoom, setMapZoom] = useState(4);
+  const [activeRequestId, setActiveRequestId] = useState(null);
+  const [foundHospitals, setFoundHospitals] = useState([]);
+  const [nearestDistances, setNearestDistances] = useState({});
+  const mapRef = useRef(null);
   const [sectorHealth, setSectorHealth] = useState([
     {name:"Wayanad", status:"Critical", percent:25, color:"#FF1744"},
     {name:"Idukki", status:"Critical", percent:31, color:"#FF1744"},
@@ -54,7 +63,12 @@ export default memo(function CitizenRequests() {
     {name:"Uttarakhand", status:"Moderate", percent:55, color:"#FFB800"},
     {name:"Ernakulam", status:"Good", percent:91, color:"#00FF88"}
   ]);
-  const autocompleteRef = useRef(null);
+
+  useEffect(() => {
+    if (searchParams.get('sos') === 'true') {
+      setSosOpen(true);
+    }
+  }, [searchParams]);
 
   // Load India disaster zones (only for map circles now)
   useEffect(() => {
@@ -63,15 +77,19 @@ export default memo(function CitizenRequests() {
     }).catch(console.error);
   }, []);
 
-  // Map configuration
-  const { isLoaded } = useJsApiLoader({
-    id: GOOGLE_MAPS_ID,
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-    libraries: GOOGLE_MAPS_LIBRARIES,
-  });
+  // Map configuration (handled by root loader in App.jsx)
+  const { mapLoaded } = useAppContext();
+  const isLoaded = mapLoaded && typeof window !== 'undefined' && !!window.google && !!window.google.maps.visualization;
+  
+  useEffect(() => {
+    console.log("[CitizenRequests] isLoaded state changed:", isLoaded);
+  }, [isLoaded]);
 
   const heatmapData = useMemo(() => {
-    if (!isLoaded || !window.google) return [];
+    if (!isLoaded || !window.google || !window.google.maps.visualization) {
+      console.log("[CitizenRequests] Map or visualization library not ready.");
+      return [];
+    }
     // Generate cluster around Wayanad and Idukki for density visualization
     return requests.flatMap(req => {
       // Create a few data points per request to make the heatmap glow
@@ -88,34 +106,62 @@ export default memo(function CitizenRequests() {
   }, [isLoaded, requests]);
 
   const handleSosClick = () => {
-    setSosModalVisible(true);
-    setSosStatus('typing');
-    setSosLocation('');
+    setSosOpen(true);
   };
 
-  const handlePlaceChanged = () => {
-    if (autocompleteRef.current) {
-      const place = autocompleteRef.current.getPlace();
-      setSosLocation(place.formatted_address || place.name || '');
-    }
-  };
-
-  const submitSosLocation = () => {
-    setSosStatus('loading');
-    setTimeout(() => {
-      setSosStatus('success');
-    }, 2000);
-  };
-
-  const closeSosModal = () => {
-    setSosModalVisible(false);
-    setSosStatus('idle');
-  };
 
   const handleAssignResource = (location) => {
     // API mock
     setToastMessage(`Resource assigned to ${location.split(' ')[0]} — ETA 4.2 minutes via Google Maps routing`);
     setTimeout(() => setToastMessage(null), 4000);
+  };
+
+  const computeDistanceKm = (lat1, lng1, lat2, lng2) => {
+    if (!window.google || !window.google.maps.geometry) return 0;
+    const p1 = new window.google.maps.LatLng(lat1, lng1);
+    const p2 = new window.google.maps.LatLng(lat2, lng2);
+    return (window.google.maps.geometry.spherical.computeDistanceBetween(p1, p2) / 1000).toFixed(1);
+  };
+
+  const handleViewOnMap = (req) => {
+    setMapCenter({ lat: req.lat, lng: req.lng });
+    setMapZoom(12);
+    setActiveRequestId(req.id);
+    
+    if (!mapRef.current || !window.google) return;
+    
+    const service = new window.google.maps.places.PlacesService(mapRef.current);
+    service.nearbySearch(
+      {
+        location: { lat: req.lat, lng: req.lng },
+        radius: 10000,
+        type: 'hospital'
+      },
+      (results, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
+          const top3 = results.slice(0, 3).map(place => {
+            const placeLat = place.geometry.location.lat();
+            const placeLng = place.geometry.location.lng();
+            const dist = computeDistanceKm(req.lat, req.lng, placeLat, placeLng);
+            return {
+              ...place,
+              distance: dist
+            };
+          });
+          
+          setFoundHospitals(top3);
+          
+          if (top3.length > 0) {
+            setNearestDistances(prev => ({
+              ...prev,
+              [req.id]: top3[0].distance
+            }));
+          }
+        } else {
+          setFoundHospitals([]);
+        }
+      }
+    );
   };
 
   // Filter Logic
@@ -141,57 +187,6 @@ export default memo(function CitizenRequests() {
         </div>
       )}
 
-      {sosModalVisible && (
-        <div className="cr-modal-overlay">
-          <div className="cr-modal">
-            {sosStatus === 'typing' ? (
-              <div className="cr-modal-content typing">
-                <h3>{t('selectLocation')}</h3>
-                <p>{t('provideExactLocation')}</p>
-                {isLoaded ? (
-                  <Autocomplete
-                    onLoad={(ac) => (autocompleteRef.current = ac)}
-                    onPlaceChanged={handlePlaceChanged}
-                  >
-                    <input
-                      type="text"
-                      className="cr-autocomplete-input"
-                      placeholder={t('startTypingLocation')}
-                      value={sosLocation}
-                      onChange={(e) => setSosLocation(e.target.value)}
-                    />
-                  </Autocomplete>
-                ) : (
-                  <input type="text" className="cr-autocomplete-input" disabled placeholder="Loading map services..." />
-                )}
-                <button className="cr-btn-submit" onClick={submitSosLocation}>
-                  {t('sendEmergencyAlert')}
-                </button>
-                <button className="cr-btn-cancel" onClick={closeSosModal}>
-                  {t('cancel')}
-                </button>
-              </div>
-            ) : sosStatus === 'loading' ? (
-              <div className="cr-modal-content loading">
-                <div className="cr-spinner"></div>
-                <h3>{t('sendingSosAlert')}</h3>
-                <p>{t('pinpointingCoordinates')} {sosLocation || t('yourLocation')}...</p>
-              </div>
-            ) : (
-              <div className="cr-modal-content success">
-                <div className="cr-success-icon">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </div>
-                <h3>{t('sosReceived')}</h3>
-                <p>{t('dispatchingNearestUnit')}</p>
-                <button className="cr-btn-close" onClick={closeSosModal}>{t('acknowledge')}</button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* ── Page Header ── */}
       <div className="cr-header">
@@ -263,16 +258,22 @@ export default memo(function CitizenRequests() {
                   &ldquo;{req.message}&rdquo;
                 </div>
 
+                {nearestDistances[req.id] && (
+                  <div className="cr-nearest-facility" style={{ color: '#00D4FF', fontSize: '13px', marginTop: '6px', fontWeight: 'bold' }}>
+                    🏥 Nearest medical facility: {nearestDistances[req.id]} km
+                  </div>
+                )}
+
                 <div className="cr-card-actions">
                   <button className="cr-btn-assign" onClick={() => handleAssignResource(req.location)}>
                     {t('assignResource')}
                   </button>
-                  <a href={`https://www.google.com/maps/search/?api=1&query=${req.lat},${req.lng}`} target="_blank" rel="noopener noreferrer" className="cr-btn-map">
+                  <button className="cr-btn-map" onClick={() => handleViewOnMap(req)}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
                     </svg>
                     {t('viewOnMap')}
-                  </a>
+                  </button>
                 </div>
               </div>
             ))}
@@ -305,8 +306,9 @@ export default memo(function CitizenRequests() {
               ) : (
                 <GoogleMap
                   mapContainerClassName="cr-google-map"
-                  center={{ lat: 20.5, lng: 78.5 }}
-                  zoom={4}
+                  center={mapCenter}
+                  zoom={mapZoom}
+                  onLoad={(map) => { mapRef.current = map; }}
                   options={{
                     styles: isDark ? darkMapStyle : [],
                     disableDefaultUI: true,
@@ -314,31 +316,6 @@ export default memo(function CitizenRequests() {
                     backgroundColor: isDark ? '#050A14' : '#F0F4F8'
                   }}
                 >
-                  {heatmapData.length > 0 && (
-                    <HeatmapLayerF
-                      data={heatmapData}
-                      options={{
-                        radius: 25,
-                        opacity: 0.9,
-                        gradient: [
-                          'rgba(0, 255, 255, 0)',
-                          'rgba(0, 255, 255, 1)',
-                          'rgba(0, 191, 255, 1)',
-                          'rgba(0, 127, 255, 1)',
-                          'rgba(0, 63, 255, 1)',
-                          'rgba(0, 0, 255, 1)',
-                          'rgba(0, 0, 223, 1)',
-                          'rgba(0, 0, 191, 1)',
-                          'rgba(0, 0, 159, 1)',
-                          'rgba(0, 0, 127, 1)',
-                          'rgba(63, 0, 91, 1)',
-                          'rgba(127, 0, 63, 1)',
-                          'rgba(191, 0, 31, 1)',
-                          'rgba(255, 0, 0, 1)'
-                        ]
-                      }}
-                    />
-                  )}
                   {/* India disaster zone circles on citizen map */}
                   {indiaZones.slice(0, 15).map(zone => (
                     <CircleF
@@ -354,6 +331,53 @@ export default memo(function CitizenRequests() {
                         clickable: false,
                       }}
                     />
+                  ))}
+                  
+                  {activeRequestId && (
+                    <MarkerF
+                      position={mapCenter}
+                      icon={isLoaded && window.google ? {
+                        path: window.google.maps.SymbolPath.CIRCLE,
+                        fillColor: '#FF1744',
+                        fillOpacity: 1,
+                        strokeColor: '#FFFFFF',
+                        strokeWeight: 2,
+                        scale: 8
+                      } : null}
+                    />
+                  )}
+                  {activeRequestId && foundHospitals.map((hospital, index) => (
+                    <MarkerF
+                      key={hospital.place_id || index}
+                      position={{
+                        lat: hospital.geometry.location.lat(),
+                        lng: hospital.geometry.location.lng()
+                      }}
+                      icon={isLoaded && window.google ? {
+                        path: window.google.maps.SymbolPath.CIRCLE,
+                        fillColor: '#00D4FF',
+                        fillOpacity: 1,
+                        strokeColor: '#FFFFFF',
+                        strokeWeight: 2,
+                        scale: 6
+                      } : null}
+                    >
+                      <InfoWindowF
+                        position={{
+                          lat: hospital.geometry.location.lat(),
+                          lng: hospital.geometry.location.lng()
+                        }}
+                        options={{
+                          pixelOffset: isLoaded && window.google ? new window.google.maps.Size(0, -15) : null,
+                          disableAutoPan: true
+                        }}
+                      >
+                        <div style={{ color: '#000', padding: '2px 4px', fontSize: '12px', fontWeight: 'bold' }}>
+                          <div>{hospital.name}</div>
+                          <div style={{ color: '#0056b3', marginTop: '2px' }}>{hospital.distance} km away</div>
+                        </div>
+                      </InfoWindowF>
+                    </MarkerF>
                   ))}
                 </GoogleMap>
               )}
@@ -388,6 +412,10 @@ export default memo(function CitizenRequests() {
 
         </div>
       </div>
+      <SOSModal 
+        isOpen={sosOpen} 
+        onClose={() => setSosOpen(false)} 
+      />
     </div>
   );
-});
+}

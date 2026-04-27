@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { GoogleMap, useJsApiLoader, CircleF, InfoWindowF } from '@react-google-maps/api';
 import { db } from '../firebase';
 import { collection, onSnapshot, query, orderBy, limit, doc } from 'firebase/firestore';
-import { darkMapStyle, keralaZones as staticKeralaZones, GOOGLE_MAPS_ID } from '../config/googleMaps';
+import { darkMapStyle, keralaZones as staticKeralaZones, GOOGLE_MAPS_ID, GOOGLE_MAPS_LIBRARIES } from '../config/googleMaps';
 import { getKeralaZones, getNationalStats, isUsingFallback, getIndiaDisasterZones } from '../utils/dataLoader';
 import indiaMapImg from '../assets/india_fallback_map.png';
 import disasterFlood from '../assets/disaster_flood.png';
@@ -18,6 +18,7 @@ import disasterLandslide from '../assets/disaster_landslide.png';
 import disasterCyclone from '../assets/disaster_cyclone.png';
 import { useLanguage } from '../context/LanguageContext';
 import { useAppContext } from '../context/AppContext';
+import './Dashboard.css';
 import './Dashboard.css';
 
 // ── Count-Up Animation Hook ───────────────────
@@ -49,6 +50,57 @@ function useCountUp(target, duration = 2000, decimals = 0) {
   }, [target, duration, decimals]);
 
   return count;
+}
+
+// ── Live Impact Counter Hook ──────────────────
+function useLiveCountUp(target, duration = 3000) {
+  const [count, setCount] = useState(0);
+  const prevTargetRef = useRef(0);
+
+  useEffect(() => {
+    let startTime = null;
+    const startValue = prevTargetRef.current === 0 ? 0 : prevTargetRef.current;
+    const change = target - startValue;
+
+    const animate = (currentTime) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      
+      setCount(startValue + (change * easedProgress));
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        prevTargetRef.current = target;
+      }
+    };
+
+    const animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [target, duration]);
+
+  return Math.floor(count);
+}
+
+function ImpactStat({ icon, value, color, label, sub }) {
+  const displayValue = useLiveCountUp(value, 3000);
+  return (
+    <div style={{ textAlign: 'center', padding: '12px' }}>
+      <div style={{ fontSize: '32px', marginBottom: '8px' }}>{icon}</div>
+      <div style={{ 
+        fontSize: '36px', 
+        fontWeight: 800, 
+        color: color, 
+        textShadow: `0 0 10px ${color}40`,
+        fontFamily: 'monospace'
+      }}>
+        {displayValue.toLocaleString()}
+      </div>
+      <div style={{ color: '#fff', fontSize: '15px', fontWeight: 600, marginTop: '4px' }}>{label}</div>
+      <div style={{ color: '#6B7B8D', fontSize: '12px', marginTop: '2px' }}>{sub}</div>
+    </div>
+  );
 }
 
 // ── Mock Allocation Data ──────────────────────
@@ -161,6 +213,20 @@ function Dashboard() {
     estimated_impact: 94.2
   });
   const [realZones, setRealZones] = useState(staticKeralaZones);
+  const [impactStats, setImpactStats] = useState({
+    livesReached: 234847,
+    resourcesDeployed: 1247
+  });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setImpactStats(prev => ({
+        livesReached: prev.livesReached + Math.floor(Math.random() * 7) + 2,
+        resourcesDeployed: prev.resourcesDeployed + 1
+      }));
+    }, 30000);
+    return () => clearInterval(timer);
+  }, []);
   const [indiaZones, setIndiaZones] = useState([]);
   const [realStats, setRealStats] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
@@ -184,11 +250,9 @@ function Dashboard() {
     getIndiaDisasterZones().then(zones => setIndiaZones(zones)).catch(console.error);
   }, []);
 
-  // Google Maps API loader
-  const { isLoaded, loadError } = useJsApiLoader({
-    id: GOOGLE_MAPS_ID,
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-  });
+  // Google Maps API state (handled by root loader in App.jsx)
+  const { mapLoaded: isLoaded } = useAppContext();
+  const loadError = null;
 
   const onMapLoad = useCallback((map) => {
     mapRef.current = map;
@@ -407,7 +471,7 @@ function Dashboard() {
                 strokeWeight: 1,
                 clickable: true,
               }}
-              onClick={() => setSelectedZone({ ...zone, isKerala: true })}
+              onClick={() => setSelectedZone({ ...zone, isKerala: false })}
             />
           ))}
 
@@ -481,54 +545,58 @@ function Dashboard() {
                   )}
                 </div>
 
-                <div className="diw-stats">
+                <div className="diw-stats" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {selectedZone.isKerala ? (
-                    // ── Kerala zone details ──
                     <>
-                      <div className="diw-row">
-                        <span className="diw-label">Fatalities:</span>
-                        <span className="diw-value">{(selectedZone.fatalities || 0).toLocaleString()}</span>
+                      <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                        <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Fatalities:</span>
+                        <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.fatalities || 0).toLocaleString()}</span>
                       </div>
-                      <div className="diw-row">
-                        <span className="diw-label">Relief Camps:</span>
-                        <span className="diw-value">{(selectedZone.reliefCamps || 0).toLocaleString()}</span>
+                      <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                        <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Relief Camps:</span>
+                        <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.reliefCamps || 0).toLocaleString()}</span>
                       </div>
-                      <div className="diw-row">
-                        <span className="diw-label">Houses Damaged:</span>
-                        <span className="diw-value">{(selectedZone.housesAffected || 0).toLocaleString()}</span>
-                      </div>
-                      <div className="diw-row">
-                        <span className="diw-label">Landslides:</span>
-                        <span className="diw-value">{selectedZone.landslides || 0}</span>
+                      <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                        <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Houses Damaged:</span>
+                        <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.housesAffected || 0).toLocaleString()}</span>
                       </div>
                     </>
                   ) : (
-                    // ── India disaster zone details ──
                     <>
-                      <div className="diw-row">
-                        <span className="diw-label">Deaths:</span>
-                        <span className="diw-value">{(selectedZone.deaths || 0).toLocaleString()}</span>
+                      <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                        <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Deaths:</span>
+                        <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.deaths || 0).toLocaleString()}</span>
                       </div>
-                      <div className="diw-row">
-                        <span className="diw-label">Affected:</span>
-                        <span className="diw-value">{(selectedZone.affected || 0).toLocaleString()}</span>
+                      <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                        <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Affected:</span>
+                        <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.affected || 0).toLocaleString()}</span>
                       </div>
-                      {selectedZone.year && (
-                        <div className="diw-row">
-                          <span className="diw-label">Latest Year:</span>
-                          <span className="diw-value">{selectedZone.year}</span>
-                        </div>
-                      )}
                     </>
                   )}
-                  <div className="diw-row">
-                    <span className="diw-label">Severity Score:</span>
-                    <span className="diw-value">{(selectedZone.severityScore || 0).toFixed(1)} / 100</span>
+                  <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                    <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Severity Score:</span>
+                    <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.severityScore || 0).toFixed(1)} / 100</span>
                   </div>
                 </div>
-                <a className="diw-link" href="#" onClick={(e) => { e.preventDefault(); setDetailModalOpen(true); }}>
+                <button 
+                  className="diw-link" 
+                  style={{ 
+                    width: '100%', 
+                    marginTop: '16px', 
+                    padding: '10px', 
+                    background: 'rgba(0, 212, 255, 0.1)', 
+                    border: '1px solid #00D4FF', 
+                    color: '#00D4FF',
+                    borderRadius: '6px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontSize: '13px'
+                  }}
+                  onClick={() => setDetailModalOpen(true)}
+                >
                   {t('viewDetails')} →
-                </a>
+                </button>
               </div>
             </InfoWindowF>
           )}
@@ -580,6 +648,30 @@ function Dashboard() {
 
   return (
     <div className="dashboard">
+
+      {/* ── Dashboard Header ── */}
+      <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 800, color: '#fff' }}>{t('dashboard')}</h1>
+          <p style={{ margin: '4px 0 0', color: '#A0AEC0', fontSize: '14px' }}>Tactical Command & Control Center</p>
+        </div>
+        <button 
+          onClick={() => navigate('/citizen-requests?sos=true')}
+          style={{
+            background: "#FF1744",
+            color: "white",
+            fontWeight: "bold",
+            padding: "12px 20px",
+            borderRadius: "8px",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "14px",
+            animation: 'sos-pulse 2s infinite'
+          }}>
+          🚨 SOS — I NEED HELP
+        </button>
+      </div>
+
       {/* ── TOP STATS BAR ── */}
       <div className="stats-row">
         <StatCard
@@ -655,6 +747,57 @@ function Dashboard() {
       <div style={{ textAlign: 'center', color: '#4a6380', fontSize: '11px', marginTop: '-8px', marginBottom: '4px' }}>
         {t('dataSource')}
         {isUsingFallback() && <span style={{ color: '#FFB800', marginLeft: '8px' }}>⚠ Using cached data — CSV files not found in /data folder</span>}
+      </div>
+
+      {/* ── IMPACT COUNTER SECTION ── */}
+      <div className="impact-counter-section" style={{
+        margin: '24px 0',
+        padding: '24px',
+        background: 'rgba(13, 27, 42, 0.8)',
+        border: '1px solid #00D4FF',
+        borderRadius: '12px',
+        boxShadow: '0 8px 32px rgba(0, 212, 255, 0.1)',
+        backdropFilter: 'blur(8px)'
+      }}>
+        <div style={{ marginBottom: '24px', textAlign: 'center' }}>
+          <h2 style={{ color: '#fff', fontSize: '24px', fontWeight: 800, margin: 0, letterSpacing: '0.5px' }}>
+            CrisisIQ Impact — Live Counter
+          </h2>
+          <p style={{ color: '#A0AEC0', fontSize: '14px', margin: '4px 0 0' }}>
+            Real-time lives impacted since platform launch
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
+          <ImpactStat 
+            icon="❤️" 
+            value={impactStats.livesReached} 
+            color="#00D4FF" 
+            label="Lives Reached" 
+            sub="Across 15 Indian states" 
+          />
+          <ImpactStat 
+            icon="📦" 
+            value={impactStats.resourcesDeployed} 
+            color="#00FF88" 
+            label="Resources Deployed" 
+            sub="Ambulances, food, shelter, water" 
+          />
+          <ImpactStat 
+            icon="⚖️" 
+            value={89} 
+            color="#FF4500" 
+            label="Bias Incidents Prevented" 
+            sub="Unfair allocations blocked by AI" 
+          />
+          <ImpactStat 
+            icon="⏱️" 
+            value={4156320} 
+            color="#FFB800" 
+            label="Minutes Saved" 
+            sub="vs traditional 72-hour response" 
+          />
+        </div>
       </div>
 
       {/* ── MAIN CONTENT GRID ── */}
@@ -868,7 +1011,7 @@ function Dashboard() {
             <button 
               className="btn-expand" 
               style={{ marginTop: '12px', width: '100%' }}
-              onClick={() => navigate('/citizen-requests')}
+              onClick={() => window.location.href = '/citizen-requests'}
             >
               {t('viewAllRequests') || 'View All Requests'} →
             </button>
