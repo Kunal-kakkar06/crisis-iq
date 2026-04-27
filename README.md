@@ -8,26 +8,26 @@ CrisisIQ is a real-time disaster management platform designed to optimize the al
 ---
 
 ### 🌟 Latest Updates (Branch: `latest-update`)
-- **India-Wide National Scope:** The platform has been expanded from a Kerala-only pilot to a comprehensive **National Response System** covering 20 key states across India.
-- **Enhanced Fairness Analytics:** New visualization layers for India-wide bias detection, including Population Density vs. Resource correlation charts and state-level severity scoring.
-- **Secure Authentication Layer:** Integrated a modern, glassmorphic Firebase Login system with protected dashboard routes and session persistence.
-- **Optimized Allocation Engine:** Performance-tuned allocation logic with 100ms fail-fast cycles for high-pressure emergency simulation.
+- **Standard Navigation Protocol:** Implemented a ultra-stable navigation system that ensures 100% reliability during page transitions by performing fresh browser reloads for complex map pages.
+- **Global Map Architecture:** Migrated to a centralized Google Maps lifecycle management system to prevent API collisions and improve startup performance.
+- **System Resilience:** Integrated a root-level **Error Boundary & Repair System** that automatically detects UI crashes and offers a one-click "Repair System" restoration.
+- **India-Wide National Scope:** Expanded coverage to 20 key states across India with real-time disaster zone monitoring.
 
 ---
 
 ## 🚀 Google Technologies Used
 
-*   **Google Maps Platform:** Interactive map layers, real-time Resource Request Densities (Heatmaps), Places Autocomplete API, and accurate automated driver route rendering via Directions API.
-*   **Google Cloud Vertex AI:** Predicts resource needs based on regional severity, real-time demand, and dynamic variables.
-*   **Google Firebase (Authentication & Firestore):** Secure session management and real-time synchronization between citizen requests and command dashboards.
-*   **Google Cloud Translation:** Automatic UI-language translation to support seamless collaboration localized for regional contexts.
-*   **Google Cloud Speech-to-Text & Vision API:** Processing asynchronous citizen multimedia distress submissions natively in regional dialects.
+*   **Google Maps Platform:** Interactive map layers, real-time Resource Request Densities, Places Autocomplete API, and Directions API for automated driver routing.
+*   **Google Cloud Vertex AI:** Predicts resource needs based on regional severity and real-time demand.
+*   **Google Firebase (Firestore & RTDB):** Real-time synchronization for citizen requests, transparency audit logs, and system connectivity monitoring.
+*   **Google Cloud Translation:** Multi-language support localized for regional Indian contexts.
+*   **Google Cloud Gemini API:** Powering the **Gemini Command Center** for natural language disaster queries and situational reports.
 
 ## 🛠 Setup Instructions
 
 1.  **Clone the Repository**
     ```bash
-    git clone https://github.com/your-username/crisisiq.git
+    git clone https://github.com/smonishkumar/neurostack.git
     cd crisisiq
     ```
 2.  **Install dependencies**
@@ -35,28 +35,26 @@ CrisisIQ is a real-time disaster management platform designed to optimize the al
     npm install
     ```
 3.  **Environment Setup**
-    Create a `.env` file in the root directory and add the following keys. Ensure you enable Billing on Google Cloud Console!
+    Create a `.env` file in the `crisisiq` directory:
     ```env
     VITE_GOOGLE_MAPS_API_KEY=YOUR_MAPS_API_KEY
     VITE_FIREBASE_API_KEY=YOUR_FIREBASE_KEY
     VITE_FIREBASE_PROJECT_ID=YOUR_PROJECT_ID
+    VITE_FIREBASE_DATABASE_URL=YOUR_RTDB_URL
     ```
-4.  **Database Seeding (Mock Demo Data)**
-    Include the `seedDatabase()` hook from `src/seedData.js` temporarily in your App root to instantiate the Firebase structure.
+4.  **Database Seeding**
+    Run `node pushData.js` to seed the Realtime Database with mock disaster zones and hospital data.
 5.  **Run Development Server**
     ```bash
     npm run dev
     ```
-6.  **Login Credentials (Demo Mode)**
-    Use these credentials to access the dashboard:
-    *   **Email:** `admin@crisisiq.gov.in`
-    *   **Password:** `crisis123`
+
 
 ## 🌍 Live Demo
-*App preview coming soon!* — [Hosted on Firebase]()
+*Live Production Build:* **[https://crisisiq-platform.web.app](https://crisisiq-platform.web.app)**
 
 ## 👥 Team
-*   Team Lead / Developer — (Your Name)
+*   **Kunal Kakkar** — Project Lead & Lead Developer
 *   AI Integrations — (Teammate)
 *   UI/UX Designer — (Teammate)
 
