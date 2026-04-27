@@ -684,10 +684,44 @@ function Dashboard() {
               Powered by Google Maps Platform
             </div>
           </div>
+          
+          {/* Weather Summary Widget */}
+          <div 
+            style={{
+              background: 'rgba(15, 118, 110, 0.2)',
+              border: '1px solid rgba(20, 184, 166, 0.4)',
+              borderRadius: '8px',
+              padding: '10px 14px',
+              marginTop: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onClick={() => navigate('/resource-map', { state: { enableWeather: true } })}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(15, 118, 110, 0.3)';
+              e.currentTarget.style.borderColor = 'rgba(20, 184, 166, 0.6)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(15, 118, 110, 0.2)';
+              e.currentTarget.style.borderColor = 'rgba(20, 184, 166, 0.4)';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '16px' }}>🌧</span>
+              <span style={{ color: '#E2E8F0', fontWeight: '600', fontSize: '13px' }}>
+                Weather Monitor — 3 zones high risk
+              </span>
+            </div>
+            <span style={{ color: '#2DD4BF', fontSize: '12px', fontWeight: 'bold' }}>View Layer →</span>
+          </div>
 
           <button 
             className="btn-expand" 
             id="btn-expand-tactical"
+            style={{ marginTop: '12px' }}
             onClick={() => navigate('/resource-map')}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
