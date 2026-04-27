@@ -5,7 +5,7 @@
 // library loading across all map components.
 // ============================================
 
-export const GOOGLE_MAPS_LIBRARIES = ['visualization', 'places'];
+export const GOOGLE_MAPS_LIBRARIES = ['visualization', 'places', 'geometry'];
 export const GOOGLE_MAPS_ID = 'crisisiq-map';
 
 // ── Comprehensive Dark Map Style ──────────────────

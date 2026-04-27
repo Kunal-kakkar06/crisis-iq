@@ -14,7 +14,8 @@ import {
   CircleF,
   InfoWindowF,
   HeatmapLayerF,
-  DirectionsRenderer
+  DirectionsRenderer,
+  PolylineF
 } from '@react-google-maps/api';
 import { 
   darkMapStyle, 
@@ -110,6 +111,10 @@ function ResourceMap() {
   const [selectedWeatherZone, setSelectedWeatherZone] = useState(null);
   const [dismissWeatherAlert, setDismissWeatherAlert] = useState(false);
 
+  // Routing API State
+  const [allocationRoutes, setAllocationRoutes] = useState([]);
+  const [isComputingRoutes, setIsComputingRoutes] = useState(false);
+
   const mapRef = useRef(null);
 
   // Load real CSV data
@@ -165,6 +170,58 @@ function ResourceMap() {
     const interval = setInterval(fetchAllWeather, 600000);
     return () => clearInterval(interval);
   }, []);
+
+  // Compute Routes via Google Routes API when Allocation Engine triggers
+  useEffect(() => {
+    if (location.state?.triggerRoutes && indiaZones.length > 0) {
+      setIsComputingRoutes(true);
+      
+      // Top 3 critical zones
+      const topZones = [...indiaZones].sort((a, b) => b.severityScore - a.severityScore).slice(0, 3);
+      const DEPOT_COORDS = { lat: 21.1458, lng: 79.0882 }; // Nagpur Central Depot
+      
+      const fetchRoutes = async () => {
+        try {
+          const routesPromises = topZones.map(async (zone) => {
+            const response = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Goog-Api-Key': import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+                'X-Goog-FieldMask': 'routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline'
+              },
+              body: JSON.stringify({
+                origin: { location: { latLng: { latitude: DEPOT_COORDS.lat, longitude: DEPOT_COORDS.lng } } },
+                destination: { location: { latLng: { latitude: zone.lat, longitude: zone.lng } } },
+                travelMode: 'DRIVE',
+                routingPreference: 'TRAFFIC_AWARE'
+              })
+            });
+            const data = await response.json();
+            if (data.routes && data.routes.length > 0) {
+              return {
+                zone,
+                durationSeconds: parseInt(data.routes[0].duration.replace('s', '')),
+                polyline: data.routes[0].polyline.encodedPolyline
+              };
+            }
+            return null;
+          });
+
+          const results = await Promise.all(routesPromises);
+          setAllocationRoutes(results.filter(r => r !== null));
+        } catch (e) {
+          console.error('Error fetching routes API:', e);
+        } finally {
+          setIsComputingRoutes(false);
+        }
+      };
+      
+      fetchRoutes();
+      // Clean up state so it doesn't re-trigger on remount
+      navigate('/resource-map', { replace: true, state: {} });
+    }
+  }, [location.state, indiaZones, navigate]);
 
   // Load Maps with visualization + places libraries
   const { isLoaded, loadError } = useJsApiLoader({
@@ -299,8 +356,9 @@ function ResourceMap() {
       );
     }
     return (
-      <GoogleMap
-        mapContainerClassName="full-map-container"
+      <>
+        <GoogleMap
+          mapContainerClassName="full-map-container"
         center={mapView === 'india' ? INDIA_CENTER : KERALA_CENTER}
         zoom={mapView === 'india' ? 5 : 8}
         onLoad={onMapLoad}
@@ -529,7 +587,61 @@ function ResourceMap() {
             </div>
           </InfoWindowF>
         )}
+        {/* Google Maps Routes API Layer */}
+        {allocationRoutes.map((route, i) => (
+          <React.Fragment key={`route-${i}`}>
+            <PolylineF
+              path={window.google.maps.geometry.encoding.decodePath(route.polyline)}
+              options={{
+                strokeColor: '#00D4FF', // Cyan
+                strokeOpacity: 0.8,
+                strokeWeight: 4,
+                geodesic: true
+              }}
+            />
+            {/* Show ETA at the destination */}
+            <InfoWindowF
+              position={{ lat: route.zone.lat, lng: route.zone.lng }}
+              options={{ disableAutoPan: true }}
+            >
+              <div style={{ background: '#050A14', color: '#00D4FF', padding: '4px 8px', borderRadius: '4px', border: '1px solid #00D4FF', fontWeight: 'bold', fontSize: '12px' }}>
+                ETA: {Math.round(route.durationSeconds / 60)} min
+              </div>
+            </InfoWindowF>
+          </React.Fragment>
+        ))}
       </GoogleMap>
+
+      {/* Routes API Branding Banner */}
+      {allocationRoutes.length > 0 && (
+        <div style={{
+          position: 'absolute',
+          bottom: '24px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'rgba(5, 10, 20, 0.85)',
+          border: '1px solid #00D4FF',
+          boxShadow: '0 4px 20px rgba(0, 212, 255, 0.2)',
+          color: '#fff',
+          padding: '10px 20px',
+          borderRadius: '30px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          zIndex: 100,
+          backdropFilter: 'blur(10px)',
+          animation: 'slideUp 0.5s ease-out'
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          <span style={{ fontSize: '14px', fontWeight: 600 }}>
+            Traffic-aware routing — powered by Google Maps Routes API
+          </span>
+        </div>
+      )}
+      </>
     );
   };
 

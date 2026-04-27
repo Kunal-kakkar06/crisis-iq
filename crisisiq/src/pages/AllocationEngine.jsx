@@ -145,9 +145,12 @@ function Toast({ message, onDone }) {
   );
 }
 
+import { useNavigate } from 'react-router-dom';
+
 function AllocationEngine() {
   const { isDark } = useTheme();
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [allocations, setAllocations] = useState(() => 
     allocationData.map(r => ({ ...r, priority: r.priorityScore }))
   );
@@ -217,6 +220,11 @@ function AllocationEngine() {
 
     setIsRunning(false);
     setToastMsg('Allocation complete — 20 resources optimised across 15 Indian states. Bias score reduced to 0.23');
+    
+    // Auto-navigate to map to show routes
+    setTimeout(() => {
+      navigate('/resource-map', { state: { triggerRoutes: true } });
+    }, 2000);
   };
 
   return (
