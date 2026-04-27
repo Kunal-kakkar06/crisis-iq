@@ -308,25 +308,38 @@ function AllocationEngine() {
         <div className="ae-chart-header">
           <div>
             <h2 className="ae-section-title" style={{ fontSize: '17px', fontWeight: 800, color: isDark ? '#FFFFFF' : '#0F1E2E', letterSpacing: '-0.2px' }}>{t('predictiveResourceLoad')}</h2>
-            <p className="ae-chart-sub" style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>{t('forecastPoweredByVertexAi')}</p>
+            <p className="ae-chart-sub" style={{ fontSize: '12px', fontWeight: 600, color: isDark ? '#64748B' : '#475569' }}>{t('forecastPoweredByVertexAi')}</p>
           </div>
           <div className="ae-chart-legend">
-            <span style={{ background: '#E6F1FB', color: '#185FA5', border: '1px solid #B5D4F4', fontWeight: 700, borderRadius: '6px', padding: '5px 12px', fontSize: '12px' }}>— {t('currentLoad')}</span>
-            <span style={{ background: '#FAEEDA', color: '#854F0B', border: '1px solid #FAC775', fontWeight: 700, borderRadius: '6px', padding: '5px 12px', fontSize: '12px' }}>--- {t('predicted')}</span>
+            <span style={{
+              background: isDark ? 'rgba(0,212,255,0.12)' : '#E6F1FB',
+              color: isDark ? '#00D4FF' : '#185FA5',
+              border: `1px solid ${isDark ? 'rgba(0,212,255,0.35)' : '#B5D4F4'}`,
+              fontWeight: 700, borderRadius: '6px', padding: '5px 12px', fontSize: '12px'
+            }}>— {t('currentLoad')}</span>
+            <span style={{
+              background: isDark ? 'rgba(255,160,0,0.12)' : '#FAEEDA',
+              color: isDark ? '#FFA500' : '#854F0B',
+              border: `1px solid ${isDark ? 'rgba(255,160,0,0.35)' : '#FAC775'}`,
+              fontWeight: 700, borderRadius: '6px', padding: '5px 12px', fontSize: '12px'
+            }}>--- {t('predicted')}</span>
           </div>
         </div>
 
         <ResponsiveContainer width="100%" height={260}>
           <LineChart data={chartData} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
-            <CartesianGrid stroke="#E2E8EF" strokeWidth={1} />
+            <CartesianGrid
+              stroke={isDark ? 'rgba(255,255,255,0.08)' : '#E2E8EF'}
+              strokeWidth={1}
+            />
             <XAxis
               dataKey="time"
-              tick={{ fill: '#475569', fontSize: 12, fontWeight: 600 }}
-              axisLine={{ stroke: '#E2E8EF' }}
+              tick={{ fill: isDark ? '#8A9BB3' : '#475569', fontSize: 12, fontWeight: 600 }}
+              axisLine={{ stroke: isDark ? 'rgba(255,255,255,0.12)' : '#CBD5E1' }}
               tickLine={false}
             />
             <YAxis
-              tick={{ fill: '#475569', fontSize: 12, fontWeight: 600 }}
+              tick={{ fill: isDark ? '#8A9BB3' : '#475569', fontSize: 12, fontWeight: 600 }}
               axisLine={false}
               tickLine={false}
               unit="%"
@@ -337,16 +350,16 @@ function AllocationEngine() {
               type="monotone"
               dataKey="current"
               name="Current Load"
-              stroke="#378ADD"
+              stroke={isDark ? '#00D4FF' : '#378ADD'}
               strokeWidth={2.5}
-              dot={{ fill: '#378ADD', r: 5, stroke: '#FFFFFF', strokeWidth: 2 }}
-              activeDot={{ r: 7, fill: '#378ADD', stroke: '#FFFFFF', strokeWidth: 2 }}
+              dot={{ fill: isDark ? '#00D4FF' : '#378ADD', r: 5, stroke: isDark ? '#0D1B2A' : '#FFFFFF', strokeWidth: 2 }}
+              activeDot={{ r: 7, fill: isDark ? '#00D4FF' : '#378ADD', stroke: isDark ? '#0D1B2A' : '#FFFFFF', strokeWidth: 2 }}
             />
             <Line
               type="monotone"
               dataKey="predicted"
               name="Predicted"
-              stroke="#FF4500"
+              stroke={isDark ? '#FFA500' : '#FF4500'}
               strokeWidth={2.5}
               strokeDasharray="6 3"
               dot={{ fill: '#FF4500', r: 4 }}
