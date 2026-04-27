@@ -62,6 +62,7 @@ const HOSPITAL_ICON = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
 const INDIA_CENTER = { lat: 20.5937, lng: 78.9629 };
 
 const weatherZonesConfig = [
+  // Kerala Zones
   {id:"WYD", name:"Wayanad", lat:11.6854, lng:76.1320},
   {id:"IDK", name:"Idukki", lat:9.9189, lng:77.1025},
   {id:"PKD", name:"Palakkad", lat:10.7867, lng:76.6548},
@@ -71,7 +72,19 @@ const weatherZonesConfig = [
   {id:"EKM", name:"Ernakulam", lat:9.9816, lng:76.2999},
   {id:"KTM", name:"Kottayam", lat:9.5916, lng:76.5222},
   {id:"KZD", name:"Kozhikode", lat:11.2588, lng:75.7804},
-  {id:"WND", name:"Wayanad", lat:11.6854, lng:76.1320}
+  // National Zones
+  {id:"MUM", name:"Mumbai", lat:19.0760, lng:72.8777},
+  {id:"DEL", name:"Delhi", lat:28.7041, lng:77.1025},
+  {id:"KOL", name:"Kolkata", lat:22.5726, lng:88.3639},
+  {id:"CHN", name:"Chennai", lat:13.0827, lng:80.2707},
+  {id:"BGL", name:"Bengaluru", lat:12.9716, lng:77.5946},
+  {id:"HYD", name:"Hyderabad", lat:17.3850, lng:78.4867},
+  {id:"AHM", name:"Ahmedabad", lat:23.0225, lng:72.5714},
+  {id:"PAT", name:"Patna", lat:25.5941, lng:85.1376},
+  {id:"GHW", name:"Guwahati", lat:26.1445, lng:91.7362},
+  {id:"BHB", name:"Bhubaneswar", lat:20.2961, lng:85.8245},
+  {id:"SML", name:"Shimla", lat:31.1048, lng:77.1734},
+  {id:"SRN", name:"Srinagar", lat:34.0837, lng:74.7973}
 ];
 
 function ResourceMap() {
@@ -350,7 +363,7 @@ function ResourceMap() {
             <CircleF
               key={`weather-${wZone.id}-${idx}`}
               center={{ lat: wZone.lat, lng: wZone.lng }}
-              radius={15000}
+              radius={mapView === 'india' ? 80000 : 15000}
               options={{
                 fillColor: circleColor,
                 fillOpacity: 0.35,
