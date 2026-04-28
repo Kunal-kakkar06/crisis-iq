@@ -380,7 +380,7 @@ function Dashboard() {
     if (mapsError) {
       return (
         <div style={{
-          height:"100%",
+          height:"400px",
           background:"#0A1628",
           borderRadius:"8px",
           border:"1px solid rgba(45,125,210,0.3)",
@@ -429,7 +429,7 @@ function Dashboard() {
     }
 
     return (
-      <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', borderRadius: '8px' }}>
+      <div style={{ position: 'relative', width: '100%', height: '350px', overflow: 'hidden', borderRadius: '8px' }}>
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
           center={indiaCenter}
@@ -858,10 +858,10 @@ function Dashboard() {
               {t('live')}
             </div>
           ) : (
-            <div className="live-indicator" style={{ color: '#888' }}>
-              <span className="live-dot" style={{ background: '#888', boxShadow: 'none' }}></span>
-              Offline
-            </div>
+              <div className="live-indicator" style={{ color: '#FFB800' }}>
+                <span className="live-dot" style={{ background: '#FFB800', boxShadow: '0 0 6px #FFB800' }}></span>
+                Demo Mode
+              </div>
           )}
         </div>
 

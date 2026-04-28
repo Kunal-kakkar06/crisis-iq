@@ -34,7 +34,7 @@ const en = {
   fairnessAnalytics: 'Fairness Analytics',
   transparencyLog: 'Transparency Log',
   citizenRequests: 'Citizen Requests',
-  offlineCached: 'Offline — cached data',
+  offlineCached: 'Demo Mode — Kerala 2018 Data',
   systemVersion: 'System v2.4.1',
   poweredBy: 'Powered by',
 

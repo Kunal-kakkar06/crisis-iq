@@ -33,17 +33,8 @@ const GeminiChat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
 
-  // Initialize Gemini AI only once
-  const genAI = React.useMemo(() => {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) return null;
-    return new GoogleGenerativeAI(apiKey);
-  }, []);
-
-  const model = React.useMemo(() => {
-    if (!genAI) return null;
-    return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-  }, [genAI]);
+  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
   useEffect(() => {
     if (chatEndRef.current) {
@@ -60,10 +51,6 @@ const GeminiChat = () => {
     setIsTyping(true);
 
     try {
-      if (!model) {
-        throw new Error("Gemini API key is missing. Please add VITE_GEMINI_API_KEY to your .env file.");
-      }
-
       const result = await model.generateContent(
         SYSTEM_PROMPT + "\n\nUser: " + text
       );
