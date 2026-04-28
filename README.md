@@ -1,8 +1,3 @@
-Here’s your **final, submission-ready README** — clean, strong, and aligned with your PPT.
-You can **copy-paste this directly** 👇
-
----
-
 # CrisisIQ 🌐
 
 ## AI-Powered Disaster Resource Allocation & Fairness Analytics System
