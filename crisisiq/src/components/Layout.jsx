@@ -179,8 +179,8 @@ function Layout({ children }) {
         <div className="sidebar-footer">
           <div className="system-status">
             <div className="status-row">
-              <span className="status-dot" style={{ backgroundColor: isFirebaseConnected ? '#00FF88' : '#FF1744', boxShadow: `0 0 8px ${isFirebaseConnected ? '#00FF88' : '#FF1744'}` }}></span>
-              <span className="status-text">{isFirebaseConnected ? 'Firebase Connected' : t('offlineCached')}</span>
+              <span className="status-dot" style={{ backgroundColor: isFirebaseConnected ? '#00FF88' : '#FFB800', boxShadow: `0 0 8px ${isFirebaseConnected ? '#00FF88' : '#FFB800'}` }}></span>
+              <span className="status-text">{isFirebaseConnected ? 'Firebase Connected' : 'Demo Mode — Kerala 2018 Data'}</span>
             </div>
             <span className="version-text">{t('systemVersion')}</span>
           </div>

@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GoogleMap, CircleF, InfoWindowF } from '@react-google-maps/api';
+import { GoogleMap, Marker, Circle } from '@react-google-maps/api';
 import { db } from '../firebase';
 import { collection, onSnapshot, query, orderBy, limit, doc } from 'firebase/firestore';
 import { darkMapStyle, keralaZones as staticKeralaZones, GOOGLE_MAPS_ID, GOOGLE_MAPS_LIBRARIES } from '../config/googleMaps';
@@ -232,6 +232,7 @@ function Dashboard() {
   const [activeFilter, setActiveFilter] = useState('All');
   const mapRef = useRef(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [mapsError, setMapsError] = useState(false);
 
   const getDisasterImage = (zone) => {
     if (!zone) return disasterFlood;
@@ -251,7 +252,6 @@ function Dashboard() {
   }, []);
 
   // Google Maps state (replaced useAppContext with local state)
-  const [isLoaded] = useState(true);
   const loadError = null;
 
   const onMapLoad = useCallback((map) => {
@@ -353,298 +353,120 @@ function Dashboard() {
     }
   };
 
-  // ── Map rendering ──────────────────────────
+  const mapContainerStyle = {
+    width: "100%",
+    height: "100%",
+    minHeight: "350px",
+    borderRadius: "8px"
+  };
+
+  const indiaCenter = { 
+    lat: 20.5937, 
+    lng: 78.9629 
+  };
+
+  const disasterZones = [
+    {id:1,name:"Wayanad", lat:11.6854,lng:76.1320, severity:"CRITICAL",color:"#FF1744"},
+    {id:2,name:"Idukki", lat:9.9189,lng:77.1025, severity:"CRITICAL",color:"#FF1744"},
+    {id:3,name:"Chamoli", lat:30.4087,lng:79.3192, severity:"CRITICAL",color:"#FF1744"},
+    {id:4,name:"Darbhanga", lat:26.1542,lng:85.8918, severity:"HIGH",color:"#FF4500"},
+    {id:5,name:"Dhubri", lat:26.0200,lng:89.9800, severity:"HIGH",color:"#FF4500"},
+    {id:6,name:"Puri", lat:19.8135,lng:85.8312, severity:"HIGH",color:"#FF4500"},
+    {id:7,name:"Kolhapur", lat:16.7050,lng:74.2433, severity:"MEDIUM",color:"#FFB800"},
+    {id:8,name:"Ernakulam", lat:9.9816,lng:76.2999, severity:"STABLE",color:"#00FF88"}
+  ];
+
   const renderMap = () => {
-    if (loadError) return renderMapFallback();
-    if (!isLoaded) {
+    if (mapsError) {
       return (
-        <div className="map-loading">
-          <div className="map-loading-spinner"></div>
-          <span>Loading Tactical Map...</span>
+        <div style={{
+          height:"400px",
+          background:"#0A1628",
+          borderRadius:"8px",
+          border:"1px solid rgba(45,125,210,0.3)",
+          display:"flex",
+          flexDirection:"column",
+          alignItems:"center",
+          justifyContent:"center",
+          color:"white"
+        }}>
+          <div style={{fontSize:"40px", marginBottom:"12px"}}>🗺️</div>
+          <p style={{color:"#9CA3AF", fontSize:"13px"}}>
+            Tactical Overview — India
+          </p>
+          <div style={{
+            marginTop:"16px",
+            display:"grid",
+            gridTemplateColumns:"1fr 1fr 1fr",
+            gap:"8px"
+          }}>
+            {[
+              {n:"Wayanad",s:"CRITICAL", c:"#FF1744"},
+              {n:"Idukki",s:"CRITICAL", c:"#FF1744"},
+              {n:"Palakkad",s:"CRITICAL", c:"#FF1744"},
+              {n:"Thrissur",s:"HIGH", c:"#FF4500"},
+              {n:"Alappuzha",s:"HIGH", c:"#FF4500"},
+              {n:"Ernakulam",s:"STABLE", c:"#00FF88"}
+            ].map(z => (
+              <div key={z.n} style={{
+                background:"rgba(13,27,42,0.9)",
+                border:`1px solid ${z.c}40`,
+                borderRadius:"6px",
+                padding:"8px 12px",
+                textAlign:"center"
+              }}>
+                <div style={{color:"white", fontSize:"11px", fontWeight:"600"}}>
+                  {z.n}
+                </div>
+                <div style={{color:z.c, fontSize:"10px", marginTop:"2px"}}>
+                  {z.s}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       );
     }
 
     return (
-      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-
-        {/* Disaster Type Legend */}
-        <div style={{
-          position: 'absolute', top: '12px', left: '12px', zIndex: 10,
-          background: 'rgba(5,10,20,0.82)', backdropFilter: 'blur(6px)',
-          border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px',
-          padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '5px',
-        }}>
-          <div style={{ fontSize: '10px', fontWeight: 700, color: '#A0AEC0', letterSpacing: '1px', marginBottom: '4px' }}>DISASTER TYPE</div>
-          {[
-            { color: '#1E90FF', label: 'Flood' },
-            { color: '#FF6D00', label: 'Earthquake' },
-            { color: '#9C27B0', label: 'Cyclone / Storm' },
-            { color: '#FF8F00', label: 'Drought' },
-            { color: '#E91E63', label: 'Epidemic' },
-            { color: '#795548', label: 'Landslide' },
-            { color: '#FF1744', label: 'Extreme Temp' },
-          ].map(({ color, label }) => (
-            <div
-              key={label}
-              onClick={() => setActiveFilter(f => f === label ? 'All' : label)}
-              style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer',
-                opacity: activeFilter !== 'All' && activeFilter !== label ? 0.4 : 1, transition: 'opacity 0.2s' }}
-            >
-              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: color, flexShrink: 0,
-                boxShadow: `0 0 6px ${color}` }} />
-              <span style={{ fontSize: '11px', color: '#CBD5E0', fontWeight: 500 }}>{label}</span>
-            </div>
-          ))}
-          <div style={{ marginTop: '6px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '6px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-              <span style={{ width: '10px', height: '10px', borderRadius: '50%', border: '2px solid #FFFFFF', flexShrink: 0 }} />
-              <span style={{ fontSize: '11px', color: '#CBD5E0', fontWeight: 500 }}>🌊 Kerala 2018</span>
-            </div>
-          </div>
-          <div style={{ marginTop: '6px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '6px', fontSize: '10px', color: '#A0AEC0' }}>
-            Click to filter
-          </div>
-        </div>
-
-        {/* Attribution Badge */}
-        <div style={{
-          position: 'absolute', bottom: '12px', left: '12px',
-          backgroundColor: 'rgba(5, 10, 20, 0.7)', padding: '4px 10px',
-          borderRadius: '4px', zIndex: 1, fontSize: '11px', color: 'rgba(255,255,255,0.7)',
-          backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.1)',
-          pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '6px'
-        }}>
-          Powered by Google Maps Platform
-        </div>
-
+      <div style={{ position: 'relative', width: '100%', height: '350px', overflow: 'hidden', borderRadius: '8px' }}>
         <GoogleMap
-          mapContainerClassName="google-map-container"
-          center={{ lat: 20.5937, lng: 78.9629 }}
+          mapContainerStyle={mapContainerStyle}
+          center={indiaCenter}
           zoom={5}
-          onLoad={onMapLoad}
           options={{
             styles: darkMapStyle,
-            disableDefaultUI: true,
+            disableDefaultUI: false,
             zoomControl: true,
             mapTypeControl: false,
             streetViewControl: false,
-            fullscreenControl: false,
-            backgroundColor: '#050A14',
-            gestureHandling: 'cooperative',
-          }}
-          onClick={() => setSelectedZone(null)}
-        >
-          {/* India-wide disaster zones from disasterIND.csv */}
-          {indiaZones
-            .filter(z => activeFilter === 'All' || z.disasterType?.toLowerCase().includes(activeFilter.toLowerCase().split(' /')[0]))
-            .map((zone) => (
-            <CircleF
+            fullscreenControl: true
+          }}>
+          {disasterZones.map(zone => (
+            <Circle
               key={zone.id}
-              center={{ lat: zone.lat, lng: zone.lng }}
-              radius={zone.severity === 'CRITICAL' ? 120000 : zone.severity === 'HIGH' ? 90000 : 60000}
+              center={{lat:zone.lat, lng:zone.lng}}
+              radius={80000}
               options={{
                 fillColor: zone.color,
-                fillOpacity: 0.18,
+                fillOpacity: 0.3,
                 strokeColor: zone.color,
-                strokeOpacity: 0.7,
-                strokeWeight: 1.5,
-                clickable: true,
+                strokeOpacity: 0.8,
+                strokeWeight: 2
               }}
-              onClick={() => setSelectedZone(zone)}
             />
           ))}
-
-          {/* Inner brighter circles sized by severity */}
-          {indiaZones
-            .filter(z => activeFilter === 'All' || z.disasterType?.toLowerCase().includes(activeFilter.toLowerCase().split(' /')[0]))
-            .map((zone) => (
-            <CircleF
-              key={`inner-${zone.id}`}
-              center={{ lat: zone.lat, lng: zone.lng }}
-              radius={Math.max(15000, (zone.severityScore / 100) * 60000)}
-              options={{
-                fillColor: zone.color,
-                fillOpacity: 0.55,
-                strokeColor: zone.color,
-                strokeOpacity: 1,
-                strokeWeight: 1,
-                clickable: true,
-              }}
-              onClick={() => setSelectedZone({ ...zone, isKerala: false })}
+          {disasterZones.map(zone => (
+            <Marker
+              key={`m-${zone.id}`}
+              position={{lat:zone.lat,lng:zone.lng}}
+              title={`${zone.name} — ${zone.severity}`}
             />
           ))}
-
-          {/* ── Kerala District Zones (white-outlined — smaller detail layer) ── */}
-          {realZones.map((zone) => (
-            <CircleF
-              key={`kerala-outer-${zone.id}`}
-              center={{ lat: zone.lat, lng: zone.lng }}
-              radius={22000}
-              options={{
-                fillColor: zone.color,
-                fillOpacity: 0.15,
-                strokeColor: '#FFFFFF',
-                strokeOpacity: 0.6,
-                strokeWeight: 1.5,
-                clickable: true,
-              }}
-              onClick={() => setSelectedZone({ ...zone, isKerala: true })}
-            />
-          ))}
-          {realZones.map((zone) => (
-            <CircleF
-              key={`kerala-inner-${zone.id}`}
-              center={{ lat: zone.lat, lng: zone.lng }}
-              radius={Math.max(4000, (zone.severityScore / 100) * 12000)}
-              options={{
-                fillColor: zone.color,
-                fillOpacity: 0.75,
-                strokeColor: zone.color,
-                strokeOpacity: 1,
-                strokeWeight: 1,
-                clickable: true,
-              }}
-              onClick={() => setSelectedZone({ ...zone, isKerala: true })}
-            />
-          ))}
-
-          {selectedZone && (
-            <InfoWindowF
-              position={{ lat: selectedZone.lat, lng: selectedZone.lng }}
-              onCloseClick={() => setSelectedZone(null)}
-              options={{ maxWidth: 320 }}
-            >
-              <div className="dark-info-window">
-                <div className="diw-image-header" style={{ width: 'calc(100% + 24px)', margin: '-12px -12px 12px -12px', height: '140px', overflow: 'hidden', position: 'relative' }}>
-                  <img src={getDisasterImage(selectedZone)} alt="Disaster Area" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%', background: 'linear-gradient(to top, #0D1B2A, transparent)' }}></div>
-                </div>
-
-                <h3 className="diw-title">{selectedZone.name}</h3>
-                <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                  <span
-                    className="diw-severity-pill"
-                    style={{
-                      backgroundColor: `${selectedZone.color}22`,
-                      color: selectedZone.color,
-                      border: `1px solid ${selectedZone.color}55`
-                    }}
-                  >
-                    {selectedZone.severity}
-                  </span>
-                  {selectedZone.isKerala && (
-                    <span style={{ background: 'rgba(255,255,255,0.1)', color: '#A0AEC0', fontSize: '10px', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
-                      🌊 Kerala 2018
-                    </span>
-                  )}
-                  {!selectedZone.isKerala && selectedZone.disasterType && (
-                    <span style={{ background: `${selectedZone.color}18`, color: selectedZone.color, fontSize: '10px', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
-                      {selectedZone.disasterType}
-                    </span>
-                  )}
-                </div>
-
-                <div className="diw-stats" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {selectedZone.isKerala ? (
-                    <>
-                      <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
-                        <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Fatalities:</span>
-                        <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.fatalities || 0).toLocaleString()}</span>
-                      </div>
-                      <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
-                        <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Relief Camps:</span>
-                        <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.reliefCamps || 0).toLocaleString()}</span>
-                      </div>
-                      <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
-                        <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Houses Damaged:</span>
-                        <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.housesAffected || 0).toLocaleString()}</span>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
-                        <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Deaths:</span>
-                        <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.deaths || 0).toLocaleString()}</span>
-                      </div>
-                      <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
-                        <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Affected:</span>
-                        <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.affected || 0).toLocaleString()}</span>
-                      </div>
-                    </>
-                  )}
-                  <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
-                    <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Severity Score:</span>
-                    <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.severityScore || 0).toFixed(1)} / 100</span>
-                  </div>
-                </div>
-                <button 
-                  className="diw-link" 
-                  style={{ 
-                    width: '100%', 
-                    marginTop: '16px', 
-                    padding: '10px', 
-                    background: 'rgba(0, 212, 255, 0.1)', 
-                    border: '1px solid #00D4FF', 
-                    color: '#00D4FF',
-                    borderRadius: '6px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    fontSize: '13px'
-                  }}
-                  onClick={() => setDetailModalOpen(true)}
-                >
-                  {t('viewDetails')} →
-                </button>
-              </div>
-            </InfoWindowF>
-          )}
         </GoogleMap>
       </div>
     );
   };
-
-  // ── Map Fallback (no API key) ───────────────
-  const renderMapFallback = () => (
-    <div className="map-fallback" style={{ 
-      position: 'relative', 
-      overflow: 'hidden',
-      backgroundImage: `linear-gradient(rgba(5, 10, 20, 0.8), rgba(5, 10, 20, 0.8)), url(${indiaMapImg})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
-      <div className="map-fallback-header">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" strokeWidth="2">
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-          <circle cx="12" cy="10" r="3" />
-        </svg>
-        <span>Tactical Preview — National Disaster Zones</span>
-      </div>
-      
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-         <img src={indiaMapImg} alt="India Map" style={{ maxWidth: '80%', maxHeight: '80%', opacity: 0.4, filter: 'drop-shadow(0 0 20px rgba(0,212,255,0.2))' }} />
-         <div className="map-fallback-grid" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'transparent', padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px', overflowY: 'auto' }}>
-            {indiaZones.slice(0, 15).map((zone) => (
-              <div key={zone.id} className="zone-card-mini" style={{ borderColor: zone.color, background: 'rgba(5, 10, 20, 0.8)', backdropFilter: 'blur(4px)' }}>
-                <div className="zone-dot" style={{ background: zone.color, boxShadow: `0 0 8px ${zone.color}` }}></div>
-                <div className="zone-card-info">
-                  <span className="zone-name">{zone.name}</span>
-                  <span className={`zone-severity ${getPriorityClass(zone.severity)}`}>{zone.severity}</span>
-                </div>
-                <span className="zone-resources" style={{ fontSize: '9px', opacity: 0.7 }}>{zone.disasterType}</span>
-              </div>
-            ))}
-         </div>
-      </div>
-
-      <p className="map-fallback-note" style={{ background: 'rgba(0,0,0,0.6)', margin: 0, padding: '10px' }}>
-        Interactive map requires <code>VITE_GOOGLE_MAPS_API_KEY</code>. Showing tactical static preview.
-      </p>
-    </div>
-  );
 
   return (
     <div className="dashboard">
@@ -814,14 +636,14 @@ function Dashboard() {
                 {t('live')}
               </div>
             ) : (
-              <div className="live-indicator" style={{ color: '#888' }}>
-                <span className="live-dot" style={{ background: '#888', boxShadow: 'none' }}></span>
-                Offline
+              <div className="live-indicator" style={{ color: '#FFB800' }}>
+                <span className="live-dot" style={{ background: '#FFB800', boxShadow: '0 0 6px #FFB800' }}></span>
+                Demo Mode
               </div>
             )}
           </div>
 
-          <div className="map-wrapper" style={{ position: 'relative' }}>
+          <div className="map-wrapper" style={{ position: 'relative', overflow: 'hidden', borderRadius: '8px' }}>
             {renderMap()}
             <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.6)', color: 'rgba(255,255,255,0.7)', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', pointerEvents: 'none', zIndex: 10 }}>
               Powered by Google Maps Platform
@@ -947,9 +769,9 @@ function Dashboard() {
                   {t('live')}
                 </div>
               ) : (
-                <div className="live-indicator" style={{ color: '#888' }}>
-                  <span className="live-dot" style={{ background: '#888', boxShadow: 'none' }}></span>
-                  Offline
+                <div className="live-indicator" style={{ color: '#FFB800' }}>
+                  <span className="live-dot" style={{ background: '#FFB800', boxShadow: '0 0 6px #FFB800' }}></span>
+                  Demo Mode
                 </div>
               )}
             </div>

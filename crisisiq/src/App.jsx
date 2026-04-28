@@ -4,7 +4,7 @@
 
 import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useJsApiLoader } from '@react-google-maps/api';
+import { LoadScript } from '@react-google-maps/api';
 
 import Layout from './components/Layout';
 import { ThemeProvider } from './context/ThemeContext';
@@ -67,15 +67,11 @@ function ScrollToTop() {
 // ── Maps Loader Wrapper ───────────────────────
 function AppContent() {
   const { setMapLoaded } = useAppContext();
-  const { isLoaded } = useJsApiLoader({
-    id: GOOGLE_MAPS_ID,
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-    libraries: GOOGLE_MAPS_LIBRARIES,
-  });
 
   useEffect(() => {
-    if (isLoaded) setMapLoaded(true);
-  }, [isLoaded, setMapLoaded]);
+    // We can assume it's loaded once children render because LoadScript blocks rendering
+    setMapLoaded(true);
+  }, [setMapLoaded]);
 
   return (
     <Layout>
@@ -105,14 +101,17 @@ const SuspenseFallback = () => (
 );
 
 function App() {
+  const MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
   return (
     <AppProvider>
       <LanguageProvider>
         <ThemeProvider>
-          <Router>
-            <ScrollToTop />
-            <AppContent />
-          </Router>
+          <LoadScript googleMapsApiKey={MAPS_KEY} libraries={GOOGLE_MAPS_LIBRARIES}>
+            <Router>
+              <ScrollToTop />
+              <AppContent />
+            </Router>
+          </LoadScript>
         </ThemeProvider>
       </LanguageProvider>
     </AppProvider>

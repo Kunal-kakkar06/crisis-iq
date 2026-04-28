@@ -99,7 +99,7 @@ const en = {
   },
 
   // Panels
-  tacticalOverview: 'Tactical Overview — Kerala',
+  tacticalOverview: 'Tactical Overview — India',
   expandTacticalView: 'Expand Tactical View',
   fairnessSummary: 'Fairness Summary',
   beforeAllocation: 'Before Allocation',
