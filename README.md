@@ -1,62 +1,212 @@
-# CrisisIQ 🌐
-
-**AI-Powered Disaster Resource Allocation & Fairness Analytics Dashboard**  
-*Built for the Google Solution Challenge 2026*
-
-CrisisIQ is a real-time disaster management platform designed to optimize the allocation of life-saving resources during critical events. By combining predictive AI with geospatial visualizers, CrisisIQ ensures equitable distribution across affected districts—prioritizing human lives while remaining actively audited for bias.
+Here’s your **final, submission-ready README** — clean, strong, and aligned with your PPT.
+You can **copy-paste this directly** 👇
 
 ---
 
-### 🌟 Latest Updates (Branch: `main`)
-- **Standard Navigation Protocol:** Implemented a ultra-stable navigation system that ensures 100% reliability during page transitions by performing fresh browser reloads for complex map pages.
-- **Global Map Architecture:** Migrated to a centralized Google Maps lifecycle management system to prevent API collisions and improve startup performance.
-- **System Resilience:** Integrated a root-level **Error Boundary & Repair System** that automatically detects UI crashes and offers a one-click "Repair System" restoration.
-- **India-Wide National Scope:** Expanded coverage to 20 key states across India with real-time disaster zone monitoring.
+# CrisisIQ 🌐
+
+## AI-Powered Disaster Resource Allocation & Fairness Analytics System
+
+*Built for Google Solution Challenge 2026*
+
+CrisisIQ is an AI-powered disaster management system that ensures **fast, fair, and explainable allocation of life-saving resources** during emergencies.
+
+Unlike traditional dashboards, CrisisIQ acts as a **decision-making and execution system**, helping authorities respond intelligently in real time.
+
+---
+
+## 🚨 Problem Statement
+
+> Disaster response doesn’t fail due to lack of resources —
+> it fails due to **misallocation, delays, and lack of real-time coordination**.
+
+CrisisIQ solves this by combining **AI prediction, real-time data, and fairness analytics** into a unified platform.
+
+---
+
+## 🧠 How CrisisIQ Works
+
+1. **Crisis Detection**
+   Disaster events (floods, earthquakes, etc.) are identified
+
+2. **Data Collection**
+
+   * Citizen SOS requests
+   * Sensors & APIs
+   * Government & NGO data
+
+3. **AI Processing (Vertex AI)**
+
+   * Predicts severity
+   * Estimates resource demand
+
+4. **Smart Allocation Engine**
+   Resources distributed based on:
+
+   * Severity
+   * Distance
+   * Urgency
+
+5. **Real-Time Visualization**
+
+   * Google Maps shows demand & supply
+   * Live tracking of response
+
+6. **Monitoring & Feedback Loop**
+
+   * Continuous updates
+   * System learns and improves
+
+---
+
+## 🏆 Why CrisisIQ is Different
+
+* ⚡ Not just a dashboard — **full decision + execution system**
+* 🤖 **AI-driven real-time allocation**, not manual coordination
+* ⚖️ Built-in **fairness engine** to prevent bias
+* 🔍 **Explainable decisions** with audit logs
+* 🌐 **Unified coordination** across govt, NGOs, responders
+* 📡 Works even in **low connectivity scenarios**
+
+---
+
+## 🌟 Key Features
+
+* 📊 Real-time resource tracking (ambulances, food, rescue teams)
+* 🗺️ Hybrid disaster map (citizen + satellite data)
+* ⚠️ Severity scoring & prioritization
+* 🚚 AI-based smart resource allocation
+* ⚖️ Fairness engine for equitable distribution
+* 📜 Transparency & audit system
+
+---
+
+## 📊 Impact
+
+* 🌍 Covers **20+ states across India**
+* ⚡ Real-time updates with low latency
+* 🤖 AI improves allocation efficiency
+* ⚖️ Prevents resource bias in critical situations
+* 🚑 Enables faster response during the **first critical hours**
 
 ---
 
 ## 🚀 Google Technologies Used
 
-*   **Google Maps Platform:** Interactive map layers, real-time Resource Request Densities, Places Autocomplete API, and Directions API for automated driver routing.
-*   **Google Cloud Vertex AI:** Predicts resource needs based on regional severity and real-time demand.
-*   **Google Firebase (Firestore & RTDB):** Real-time synchronization for citizen requests, transparency audit logs, and system connectivity monitoring.
-*   **Google Cloud Translation:** Multi-language support localized for regional Indian contexts.
-*   **Google Cloud Gemini API:** Powering the **Gemini Command Center** for natural language disaster queries and situational reports.
+* **Google Maps Platform** → Visualization, routing, geospatial data
+* **Google Cloud Vertex AI** → Prediction & allocation intelligence
+* **Firebase (Firestore + RTDB)** → Real-time data sync
+* **Google Cloud Translation** → Multi-language support
+* **Google Gemini API** → Natural language command center
+
+---
+
+## 🏗️ System Architecture (Simplified)
+
+```
+User Requests → Firebase → Vertex AI → Allocation Engine → Google Maps → Dashboard
+```
+
+---
+
+## 🌍 Live Demo
+
+🔗 [https://crisisiq-platform.web.app](https://crisisiq-platform.web.app)
+
+---
+
+## 🎥 Demo Video
+
+🔗 [https://drive.google.com/drive/folders/1ur3k8zDUygJIZhBDTUKWvRbKtodOlul?usp=sharing](https://drive.google.com/drive/folders/1ur3k8zDUygJIZhBDTUKWvRbKtodOlul?usp=sharing)
+
+---
 
 ## 🛠 Setup Instructions
 
-1.  **Clone the Repository**
-    ```bash
-    git clone https://github.com/smonishkumar/neurostack.git
-    cd crisisiq
-    ```
-2.  **Install dependencies**
-    ```bash
-    npm install
-    ```
-3.  **Environment Setup**
-    Create a `.env` file in the `crisisiq` directory:
-    ```env
-    VITE_GOOGLE_MAPS_API_KEY=YOUR_MAPS_API_KEY
-    VITE_FIREBASE_API_KEY=YOUR_FIREBASE_KEY
-    VITE_FIREBASE_PROJECT_ID=YOUR_PROJECT_ID
-    VITE_FIREBASE_DATABASE_URL=YOUR_RTDB_URL
-    ```
-4.  **Database Seeding**
-    Run `node pushData.js` to seed the Realtime Database with mock disaster zones and hospital data.
-5.  **Run Development Server**
-    ```bash
-    npm run dev
-    ```
+### 1. Clone the Repository
 
+```bash
+git clone https://github.com/Kunal-kakkar06/crisis-iq.git
+cd crisisiq
+```
 
-## 🌍 Live Demo
-*Live Production Build:* **[https://crisisiq-platform.web.app](https://crisisiq-platform.web.app)**
+### 2. Install Dependencies
 
-## 👥 Team
-*   **Kunal Kakkar** — Project Lead & Lead Developer
-*   AI Integrations — (Teammate)
-*   UI/UX Designer — (Teammate)
+```bash
+npm install
+```
+
+### 3. Environment Setup
+
+Create `.env` file:
+
+```env
+VITE_GOOGLE_MAPS_API_KEY=YOUR_MAPS_API_KEY
+VITE_FIREBASE_API_KEY=YOUR_FIREBASE_KEY
+VITE_FIREBASE_PROJECT_ID=YOUR_PROJECT_ID
+VITE_FIREBASE_DATABASE_URL=YOUR_RTDB_URL
+```
+
+### 4. Seed Database
+
+```bash
+node pushData.js
+```
+
+### 5. Run Project
+
+```bash
+npm run dev
+```
+
+---
 
 ## 📸 Screenshots
-*(Coming Soon)*
+
+*(Add images from your PPT here — dashboard, map, SOS form, fairness analytics)*
+
+---
+
+## 👥 Team
+
+* **Kunal Kakkar** — Project Lead & Lead Developer
+* **S Monish Kumar** — Backend & System Integration
+* AI Integrations — Teammate
+* UI/UX Designer — Teammate
+
+---
+
+## 🔮 Future Enhancements
+
+* 📈 Higher prediction accuracy
+* 🔐 Advanced security & compliance
+* 🤝 Real-time collaboration tools
+* 🌐 Multi-language expansion
+* 📊 Improved analytics & reporting
+
+---
+
+## 📌 Final Note
+
+CrisisIQ is designed to become a **national-level disaster intelligence backbone**, enabling faster, smarter, and fairer emergency response systems.
+
+---
+
+# 🚀 Done.
+
+This version is:
+
+* **Aligned with your PPT**
+* **Judge-friendly**
+* **Clear + impactful**
+* **High-quality GitHub standard**
+
+---
+
+If you want next level upgrade → I can help you:
+
+* Add **GitHub badges**
+* Add **architecture diagram image**
+* Optimize for **shortlisting judges (top 1–5%)**
+
+Just tell me 👍
