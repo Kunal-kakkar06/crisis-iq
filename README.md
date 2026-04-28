@@ -7,7 +7,7 @@ CrisisIQ is a real-time disaster management platform designed to optimize the al
 
 ---
 
-### 🌟 Latest Updates (Branch: `latest-update`)
+### 🌟 Latest Updates (Branch: `main`)
 - **Standard Navigation Protocol:** Implemented a ultra-stable navigation system that ensures 100% reliability during page transitions by performing fresh browser reloads for complex map pages.
 - **Global Map Architecture:** Migrated to a centralized Google Maps lifecycle management system to prevent API collisions and improve startup performance.
 - **System Resilience:** Integrated a root-level **Error Boundary & Repair System** that automatically detects UI crashes and offers a one-click "Repair System" restoration.
