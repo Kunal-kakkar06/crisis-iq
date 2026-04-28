@@ -380,7 +380,7 @@ function Dashboard() {
     if (mapsError) {
       return (
         <div style={{
-          height:"400px",
+          height:"100%",
           background:"#0A1628",
           borderRadius:"8px",
           border:"1px solid rgba(45,125,210,0.3)",
@@ -429,7 +429,7 @@ function Dashboard() {
     }
 
     return (
-      <div style={{ position: 'relative', width: '100%', height: '350px', overflow: 'hidden', borderRadius: '8px' }}>
+      <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', borderRadius: '8px' }}>
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
           center={indiaCenter}
