@@ -121,7 +121,7 @@ User Requests → Firebase → Vertex AI → Allocation Engine → Google Maps �
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Kunal-kakkar06/crisis-iq.git
+git clone https://github.com/smonishkumar/neurostack.git
 cd crisisiq
 ```
 
@@ -158,16 +158,18 @@ npm run dev
 
 ## 📸 Screenshots
 
-*(Add images from your PPT here — dashboard, map, SOS form, fairness analytics)*
-
----
+<img width="1201" height="742" alt="Screenshot 2026-04-28 at 4 45 06 PM" src="https://github.com/user-attachments/assets/09c93383-242c-450e-b748-646d39fb9496" />
+<img width="1201" height="577" alt="Screenshot 2026-04-28 at 4 45 24 PM" src="https://github.com/user-attachments/assets/f1bd5ed8-0f17-4cad-8a8f-69efa714e1c5" />
+<img width="1215" height="756" alt="Screenshot 2026-04-28 at 4 45 58 PM" src="https://github.com/user-attachments/assets/34726e72-8ab7-454d-aba0-d27a30ceeab5" />
+<img width="615" height="402" alt="Screenshot 2026-04-28 at 4 46 22 PM" src="https://github.com/user-attachments/assets/0e38d003-8378-4c8a-a058-c9b6a8ae8a32" />
+<img width="1223" height="787" alt="Screenshot 2026-04-28 at 4 46 57 PM" src="https://github.com/user-attachments/assets/8efde3f1-7822-4387-a105-9a885d2df95e" />
 
 ## 👥 Team
 
 * **Kunal Kakkar** — Project Lead & Lead Developer
-* **S Monish Kumar** — Backend & System Integration
-* AI Integrations — Teammate
-* UI/UX Designer — Teammate
+* **Monish Kumar S** — Backend & System Integration
+* AI Integrations — Yatharth VijayVargiya
+* UI/UX Designer — Shaurya 
 
 ---
 
@@ -184,24 +186,3 @@ npm run dev
 ## 📌 Final Note
 
 CrisisIQ is designed to become a **national-level disaster intelligence backbone**, enabling faster, smarter, and fairer emergency response systems.
-
----
-
-# 🚀 Done.
-
-This version is:
-
-* **Aligned with your PPT**
-* **Judge-friendly**
-* **Clear + impactful**
-* **High-quality GitHub standard**
-
----
-
-If you want next level upgrade → I can help you:
-
-* Add **GitHub badges**
-* Add **architecture diagram image**
-* Optimize for **shortlisting judges (top 1–5%)**
-
-Just tell me 👍
