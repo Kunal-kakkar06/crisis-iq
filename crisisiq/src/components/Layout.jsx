@@ -6,7 +6,6 @@ import { useLocation, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
-import { useAppContext } from '../context/AppContext';
 import DemoMode from './DemoMode';
 import NotificationPanel from './NotificationPanel';
 import SettingsPanel from './SettingsPanel';
@@ -103,7 +102,8 @@ function Layout({ children }) {
   const { isDark, toggleTheme } = useTheme();
   const { t, language, currentLang } = useLanguage();
   const location = useLocation();
-  const { fairnessEnabled, setFairnessEnabled, crisisActive, setCrisisActive } = useAppContext();
+  const [fairnessEnabled, setFairnessEnabled] = useState(true);
+  const [crisisActive, setCrisisActive] = useState(true);
   const [demoModeEnabled, setDemoModeEnabled] = useState(false);
   const [isFirebaseConnected, setIsFirebaseConnected] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -145,21 +145,21 @@ function Layout({ children }) {
       {/* ── SIDEBAR ── */}
       <aside className="sidebar">
         {/* Logo */}
-        <a href="/dashboard" className="sidebar-logo" style={{ textDecoration: 'none' }}>
+        <Link to="/dashboard" className="sidebar-logo" style={{ textDecoration: 'none' }}>
           <div className="logo-icon">
             <span>CQ</span>
           </div>
           <span className="logo-text">CrisisIQ</span>
-        </a>
+        </Link>
 
         {/* Navigation */}
         <nav className="sidebar-nav">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
-              <a
+              <Link
                 key={item.path}
-                href={item.path}
+                to={item.path}
                 className="nav-link"
                 style={{
                   borderLeft: isActive ? '3px solid #00D4FF' : '3px solid transparent',
@@ -170,7 +170,7 @@ function Layout({ children }) {
               >
                 <span className="nav-icon">{item.icon}</span>
                 <span className="nav-label">{t(navLabelKeys[item.label] || 'dashboard')}</span>
-              </a>
+              </Link>
             );
           })}
         </nav>

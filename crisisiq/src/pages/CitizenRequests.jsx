@@ -5,12 +5,11 @@
 
 import { useState, useCallback, useMemo, useRef, memo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { GoogleMap, useJsApiLoader, HeatmapLayerF, CircleF, MarkerF, InfoWindowF } from '@react-google-maps/api';
+import { GoogleMap, HeatmapLayerF, CircleF, MarkerF, InfoWindowF } from '@react-google-maps/api';
 import { darkMapStyle, GOOGLE_MAPS_ID, GOOGLE_MAPS_LIBRARIES } from '../config/googleMaps';
 import { getIndiaDisasterZones } from '../utils/dataLoader';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
-import { useAppContext } from '../context/AppContext';
 import SOSModal from '../components/SOSModal';
 import './CitizenRequests.css';
 
@@ -77,8 +76,8 @@ export default function CitizenRequests() {
     }).catch(console.error);
   }, []);
 
-  // Map configuration (handled by root loader in App.jsx)
-  const { mapLoaded } = useAppContext();
+  // Map configuration (replaced useAppContext with local state)
+  const [mapLoaded] = useState(true);
   const isLoaded = mapLoaded && typeof window !== 'undefined' && !!window.google && !!window.google.maps.visualization;
   
   useEffect(() => {

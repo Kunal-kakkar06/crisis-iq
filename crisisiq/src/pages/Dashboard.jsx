@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GoogleMap, useJsApiLoader, CircleF, InfoWindowF } from '@react-google-maps/api';
+import { GoogleMap, CircleF, InfoWindowF } from '@react-google-maps/api';
 import { db } from '../firebase';
 import { collection, onSnapshot, query, orderBy, limit, doc } from 'firebase/firestore';
 import { darkMapStyle, keralaZones as staticKeralaZones, GOOGLE_MAPS_ID, GOOGLE_MAPS_LIBRARIES } from '../config/googleMaps';
@@ -17,7 +17,6 @@ import disasterFlood from '../assets/disaster_flood.png';
 import disasterLandslide from '../assets/disaster_landslide.png';
 import disasterCyclone from '../assets/disaster_cyclone.png';
 import { useLanguage } from '../context/LanguageContext';
-import { useAppContext } from '../context/AppContext';
 import './Dashboard.css';
 import './Dashboard.css';
 
@@ -201,7 +200,8 @@ function StatCard({ icon, label, value, decimals, suffix, change, glowColor }) {
 function Dashboard() {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { fairnessEnabled, crisisActive } = useAppContext();
+  const [fairnessEnabled] = useState(true);
+  const [crisisActive] = useState(true);
   const [selectedZone, setSelectedZone] = useState(null);
   const [auditLogs, setAuditLogs] = useState(mockAuditLogs);
   const [citizenRequests, setCitizenRequests] = useState(mockCitizenRequests);
@@ -250,8 +250,8 @@ function Dashboard() {
     getIndiaDisasterZones().then(zones => setIndiaZones(zones)).catch(console.error);
   }, []);
 
-  // Google Maps API state (handled by root loader in App.jsx)
-  const { mapLoaded: isLoaded } = useAppContext();
+  // Google Maps state (replaced useAppContext with local state)
+  const [isLoaded] = useState(true);
   const loadError = null;
 
   const onMapLoad = useCallback((map) => {

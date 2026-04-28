@@ -36,7 +36,12 @@ class ErrorBoundary extends React.Component {
       return (
         <div style={{ padding: '40px', textAlign: 'center', background: '#050A14', color: '#fff', height: '80vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', borderRadius: '24px', border: '1px solid rgba(255,23,68,0.2)' }}>
           <h1 style={{ color: '#FF1744', marginBottom: '16px' }}>Module Exception</h1>
-          <p style={{ color: '#A0AEC0', maxWidth: '500px', marginBottom: '24px' }}>This section failed to load due to a runtime collision. The system can self-repair.</p>
+          <p style={{ color: '#A0AEC0', maxWidth: '500px', marginBottom: '8px' }}>This section failed to load due to a runtime collision. The system can self-repair.</p>
+          {this.state.error && (
+            <p style={{ color: '#FF1744', fontSize: '12px', background: 'rgba(255,23,68,0.1)', padding: '8px 16px', borderRadius: '8px', marginBottom: '24px', fontFamily: 'monospace' }}>
+              Error: {this.state.error.message || String(this.state.error)}
+            </p>
+          )}
           <button 
             onClick={() => window.location.reload()}
             style={{ background: 'linear-gradient(135deg, #00D4FF 0%, #0072FF 100%)', color: '#fff', border: 'none', padding: '14px 32px', borderRadius: '12px', fontWeight: 900, cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,212,255,0.3)' }}

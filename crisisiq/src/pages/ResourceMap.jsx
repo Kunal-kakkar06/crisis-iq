@@ -9,7 +9,6 @@ import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   GoogleMap, 
-  useJsApiLoader, 
   MarkerF, 
   CircleF,
   InfoWindowF,
@@ -17,6 +16,7 @@ import {
   DirectionsRenderer,
   PolylineF
 } from '@react-google-maps/api';
+import ErrorBoundary from "../components/ErrorBoundary";
 import { 
   darkMapStyle, 
   KERALA_CENTER, 
@@ -36,14 +36,14 @@ import './ResourceMap.css';
 
 // ── Generate weighted heatmap points using real severity scores ──
 const getHeatmapPoints = (zones) => {
-  if (!window.google || !zones) return [];
+  if (!window.google || !window.google.maps || !window.google.maps.LatLng || !zones) return [];
   const points = [];
   zones.forEach(zone => {
-    const intensity = zone.severityScore / 100;
+    const intensity = (zone.severityScore || 50) / 100;
     const count = Math.ceil(intensity * 20);
     for (let i = 0; i < count; i++) {
-      const jitterLat = zone.lat + (Math.random() - 0.5) * 0.12;
-      const jitterLng = zone.lng + (Math.random() - 0.5) * 0.12;
+      const jitterLat = (zone.lat || 10) + (Math.random() - 0.5) * 0.12;
+      const jitterLng = (zone.lng || 76) + (Math.random() - 0.5) * 0.12;
       points.push({
         location: new window.google.maps.LatLng(jitterLat, jitterLng),
         weight: intensity
@@ -129,6 +129,7 @@ function ResourceMap() {
   const [isComputingRoutes, setIsComputingRoutes] = useState(false);
 
   const mapRef = useRef(null);
+  const [mapsError, setMapsError] = useState(false);
 
   // Load real CSV data
   useEffect(() => {
@@ -214,7 +215,7 @@ function ResourceMap() {
             if (data.routes && data.routes.length > 0) {
               return {
                 zone,
-                durationSeconds: parseInt(data.routes[0].duration.replace('s', '')),
+                durationSeconds: data.routes[0].duration ? parseInt(data.routes[0].duration.replace('s', '')) : 0,
                 polyline: data.routes[0].polyline.encodedPolyline
               };
             }
@@ -236,20 +237,19 @@ function ResourceMap() {
     }
   }, [location.state, indiaZones, navigate]);
 
-  // Load Maps with visualization + places libraries
-  // Google Maps state (handled by root loader in App.jsx)
-  const { mapLoaded: isLoaded } = useAppContext();
+  // Google Maps state (replaced useAppContext with local state for stability)
+  const [isLoaded] = useState(true); 
   const loadError = null;
 
   // Calculate route from Ernakulam Depot (STABLE) to Wayanad (CRITICAL)
   const calculateRoute = async () => {
-    if (!window.google) return;
+    if (!window.google || !window.google.maps || !window.google.maps.DirectionsService) return;
     const directionsService = new window.google.maps.DirectionsService();
     try {
       const results = await directionsService.route({
         origin: { lat: 9.9816, lng: 76.2999 }, // Ernakulam
         destination: { lat: 11.6854, lng: 76.1320 }, // Wayanad
-        travelMode: window.google.maps.TravelMode.DRIVING,
+        travelMode: 'DRIVING',
       });
       setDirectionsResponse(results);
       // Extract ETA
@@ -328,32 +328,83 @@ function ResourceMap() {
   };
 
   const renderMap = () => {
-    if (loadError) {
+    if (mapsError || loadError) {
       return (
-        <div className="map-fallback" style={{ 
-          width: '100%', height: '100%', position: 'relative', overflow: 'hidden',
-          backgroundImage: `linear-gradient(rgba(5, 10, 20, 0.8), rgba(5, 10, 20, 0.8)), url(${mapView === 'india' ? indiaMapImg : keralaMapImg})`,
-          backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+        <div style={{
+          height: "500px",
+          background: "#0A1628",
+          borderRadius: "12px",
+          border: "1px solid rgba(45,125,210,0.3)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white"
         }}>
-          <div className="map-fallback-header" style={{ position: 'absolute', top: '20px', left: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" strokeWidth="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-            <span style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{mapView === 'india' ? 'National Preview' : 'Regional Preview'}</span>
+          <div style={{fontSize:"48px",
+            marginBottom:"16px"}}>🗺️</div>
+          <h3>Interactive Map</h3>
+          <p style={{color:"#9CA3AF",
+            fontSize:"13px",marginTop:"8px"}}>
+            Showing Kerala 2018 flood zones
+          </p>
+          <div style={{
+            marginTop:"24px",
+            display:"grid",
+            gridTemplateColumns:"1fr 1fr",
+            gap:"12px",
+            width:"320px"
+          }}>
+            {[
+              {name:"Wayanad",score:88,
+               severity:"CRITICAL",color:"#FF1744"},
+              {name:"Idukki",score:94,
+               severity:"CRITICAL",color:"#FF1744"},
+              {name:"Thrissur",score:92,
+               severity:"CRITICAL",color:"#FF1744"},
+              {name:"Palakkad",score:75,
+               severity:"HIGH",color:"#FF4500"},
+              {name:"Alappuzha",score:82,
+               severity:"HIGH",color:"#FF4500"},
+              {name:"Ernakulam",score:79,
+               severity:"HIGH",color:"#FF4500"},
+              {name:"Kottayam",score:53,
+               severity:"MEDIUM",color:"#FFB800"},
+              {name:"Malappuram",score:71,
+               severity:"HIGH",color:"#FF4500"}
+            ].map(zone => (
+              <div key={zone.name} style={{
+                background:"rgba(13,27,42,0.9)",
+                border:`1px solid ${zone.color}40`,
+                borderRadius:"8px",
+                padding:"10px 14px",
+                display:"flex",
+                justifyContent:"space-between",
+                alignItems:"center"
+              }}>
+                <span style={{fontSize:"12px",
+                  color:"white"}}>
+                  {zone.name}
+                </span>
+                <span style={{fontSize:"11px",
+                  color:zone.color,
+                  fontWeight:"bold"}}>
+                  {zone.score}
+                </span>
+              </div>
+            ))}
           </div>
-          
-          <img 
-            src={mapView === 'india' ? indiaMapImg : keralaMapImg} 
-            alt="Map Preview" 
-            style={{ maxWidth: '60%', opacity: 0.3, filter: 'drop-shadow(0 0 30px rgba(0,212,255,0.2))' }} 
-          />
-          
-          <div style={{ position: 'absolute', bottom: '40px', background: 'rgba(0,0,0,0.6)', padding: '15px 25px', borderRadius: '8px', textAlign: 'center' }}>
-            <p style={{ margin: '0 0 8px 0', color: '#fff', fontSize: '15px' }}>{t('requiresValidApiKey')}</p>
-            <p style={{ margin: 0, color: '#A0AEC0', fontSize: '12px' }}>Interactive routing and heatmaps are disabled in static preview mode.</p>
-          </div>
+          <p style={{color:"#4B5563",
+            fontSize:"11px",marginTop:"16px"}}>
+            Enable Google Maps API key for 
+            interactive map
+          </p>
+          <button 
+            onClick={() => window.location.reload()}
+            style={{ marginTop: '20px', background: '#00D4FF', color: '#000', border: 'none', padding: '8px 20px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            Retry Connection
+          </button>
         </div>
       );
     }
@@ -368,316 +419,335 @@ function ResourceMap() {
     }
     return (
       <>
+        <ErrorBoundary>
         <GoogleMap
           mapContainerClassName="full-map-container"
-        center={mapView === 'india' ? INDIA_CENTER : KERALA_CENTER}
-        zoom={mapView === 'india' ? 5 : 8}
-        onLoad={onMapLoad}
-        options={{
-          styles: isDark ? darkMapStyle : [],
-          mapTypeId: 'roadmap',
-          disableDefaultUI: true,
-          zoomControl: true,
-          mapTypeControl: false,
-          streetViewControl: false,
-          fullscreenControl: true,
-          backgroundColor: isDark ? '#050A14' : '#F0F4F8',
-          gestureHandling: 'cooperative',
-        }}
-        onClick={() => setSelectedZone(null)}
-      >
-        {/* Heatmap — Kerala data */}
-        <HeatmapLayerF
-          data={getHeatmapPoints(realZones)}
+          center={mapView === 'india' ? INDIA_CENTER : KERALA_CENTER}
+          zoom={mapView === 'india' ? 5 : 8}
+          onLoad={onMapLoad}
           options={{
-            radius: mapView === 'india' ? 20 : 45,
-            opacity: 0.6,
-            gradient: [
-              'rgba(0, 0, 0, 0)',
-              'rgba(255, 255, 0, 0.4)',
-              'rgba(255, 200, 0, 0.6)',
-              'rgba(255, 150, 0, 0.7)',
-              'rgba(255, 100, 0, 0.8)',
-              'rgba(255, 69, 0, 0.85)',
-              'rgba(255, 40, 0, 0.9)',
-              'rgba(255, 0, 0, 1)',
-            ]
+            styles: isDark ? darkMapStyle : [],
+            mapTypeId: 'roadmap',
+            disableDefaultUI: true,
+            zoomControl: true,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: true,
+            backgroundColor: isDark ? '#050A14' : '#F0F4F8',
+            gestureHandling: 'cooperative',
           }}
-        />
-
-        {/* Directions / Routing */}
-        {directionsResponse && (
-          <DirectionsRenderer
-            directions={directionsResponse}
-            options={{
-              suppressMarkers: true,
-              polylineOptions: {
-                strokeColor: '#00D4FF',
-                strokeOpacity: 0,
-                icons: [{
-                  icon: {
-                    path: 'M 0,-1 0,1',
-                    strokeOpacity: 1,
-                    strokeColor: '#00D4FF',
-                    scale: 4,
-                  },
-                  offset: '0',
-                  repeat: '20px',
-                }],
-              }
-            }}
-          />
-        )}
-
-        {/* Weather Circles */}
-        {weatherEnabled && weatherData.map((wZone, idx) => {
-          let circleColor = '#00FF88'; // GREEN circle — "Clear Conditions"
-          if (wZone.weather.humidity > 85 && wZone.weather.rainfall > 0) circleColor = '#FF1744'; // RED extreme
-          else if (wZone.weather.humidity > 75 && wZone.weather.temp < 25) circleColor = '#FF6D00'; // ORANGE heavy
-          else if (wZone.weather.humidity > 65) circleColor = '#FFB800'; // YELLOW moderate
-
-          return (
-            <CircleF
-              key={`weather-${wZone.id}-${idx}`}
-              center={{ lat: wZone.lat, lng: wZone.lng }}
-              radius={mapView === 'india' ? 80000 : 15000}
+          onClick={() => setSelectedZone(null)}
+        >
+          {/* Heatmap — Kerala data */}
+          {realZones && realZones.length > 0 && (
+            <HeatmapLayerF
+              data={getHeatmapPoints(realZones)}
               options={{
-                fillColor: circleColor,
-                fillOpacity: 0.35,
-                strokeColor: circleColor,
-                strokeOpacity: 0.8,
-                strokeWeight: 1,
-                clickable: true,
+                radius: mapView === 'india' ? 20 : 45,
+                opacity: 0.6,
+                gradient: [
+                  'rgba(0, 0, 0, 0)',
+                  'rgba(255, 255, 0, 0.4)',
+                  'rgba(255, 200, 0, 0.6)',
+                  'rgba(255, 150, 0, 0.7)',
+                  'rgba(255, 100, 0, 0.8)',
+                  'rgba(255, 69, 0, 0.85)',
+                  'rgba(255, 40, 0, 0.9)',
+                  'rgba(255, 0, 0, 1)',
+                ]
               }}
-              onClick={() => setSelectedWeatherZone(wZone)}
             />
-          );
-        })}
+          )}
 
-        {/* India Disaster Zone Circles */}
-        {mapView === 'india' && indiaZones
-          .filter(z => activeSeverity === 'All' || z.severity === activeSeverity.toUpperCase())
-          .map((zone) => (
-          <CircleF
-            key={`india-${zone.id}`}
-            center={{ lat: zone.lat, lng: zone.lng }}
-            radius={zone.severity === 'CRITICAL' ? 120000 : zone.severity === 'HIGH' ? 90000 : 60000}
-            options={{
-              fillColor: zone.color,
-              fillOpacity: 0.2,
-              strokeColor: zone.color,
-              strokeOpacity: 0.8,
-              strokeWeight: 1.5,
-              clickable: true,
-            }}
-            onClick={() => setSelectedZone({ ...zone, isIndia: true })}
-          />
-        ))}
-        {mapView === 'india' && indiaZones
-          .filter(z => activeSeverity === 'All' || z.severity === activeSeverity.toUpperCase())
-          .map((zone) => (
-          <CircleF
-            key={`india-inner-${zone.id}`}
-            center={{ lat: zone.lat, lng: zone.lng }}
-            radius={Math.max(15000, (zone.severityScore / 100) * 55000)}
-            options={{
-              fillColor: zone.color,
-              fillOpacity: 0.55,
-              strokeColor: zone.color,
-              strokeOpacity: 1,
-              strokeWeight: 1,
-              clickable: true,
-            }}
-            onClick={() => setSelectedZone({ ...zone, isIndia: true })}
-          />
-        ))}
-
-        {/* Kerala Zone Markers — sized by severity score */}
-        {filteredZones.map((zone) => {
-          const svgMarker = {
-            path: isLoaded && window.google ? window.google.maps.SymbolPath.CIRCLE : null,
-            fillColor: zone.color,
-            fillOpacity: 1,
-            strokeWeight: 2,
-            strokeColor: '#FFFFFF',
-            scale: getMarkerScale(zone.severityScore),
-          };
-
-          return (
-            <MarkerF
-              key={zone.id}
-              position={{ lat: zone.lat, lng: zone.lng }}
-              icon={svgMarker}
-              onClick={() => handleZoneClick(zone)}
+          {/* Directions / Routing */}
+          {directionsResponse && (
+            <DirectionsRenderer
+              directions={directionsResponse}
+              options={{
+                suppressMarkers: true,
+                polylineOptions: {
+                  strokeColor: '#00D4FF',
+                  strokeOpacity: 0,
+                  icons: [{
+                    icon: {
+                      path: 'M 0,-1 0,1',
+                      strokeOpacity: 1,
+                      strokeColor: '#00D4FF',
+                      scale: 4,
+                    },
+                    offset: '0',
+                    repeat: '20px',
+                  }],
+                }
+              }}
             />
-          );
-        })}
+          )}
 
-        {/* Hospital markers — small blue cross icons */}
-        {allHospitals.map((h, idx) => (
-          <MarkerF
-            key={`hosp-${idx}`}
-            position={{ lat: h.lat, lng: h.lng }}
-            icon={{ url: HOSPITAL_ICON, scaledSize: isLoaded && window.google ? new window.google.maps.Size(18, 18) : null }}
-            title={`${h.name} — ${h.districtName}`}
-          />
-        ))}
+          {/* Weather Circles */}
+          {weatherEnabled && weatherData && weatherData.length > 0 && weatherData.map((wZone, idx) => {
+            if (!wZone || !wZone.lat || !wZone.lng || !wZone.weather) return null;
+            
+            let circleColor = '#00FF88'; // GREEN circle — "Clear Conditions"
+            if (wZone.weather.humidity > 85 && wZone.weather.rainfall > 0) circleColor = '#FF1744'; // RED extreme
+            else if (wZone.weather.humidity > 75 && wZone.weather.temp < 25) circleColor = '#FF6D00'; // ORANGE heavy
+            else if (wZone.weather.humidity > 65) circleColor = '#FFB800'; // YELLOW moderate
 
-        {/* Info Window — Synchronized with Dashboard */}
-        {selectedZone && (
-          <InfoWindowF
-            position={{ lat: selectedZone.lat, lng: selectedZone.lng }}
-            onCloseClick={() => setSelectedZone(null)}
-            options={{ maxWidth: 320 }}
-          >
-            <div className="dark-info-window">
-              <div className="diw-image-header" style={{ width: 'calc(100% + 24px)', margin: '-12px -12px 12px -12px', height: '140px', overflow: 'hidden', position: 'relative' }}>
-                <img 
-                  src={getDisasterImage(selectedZone)} 
-                  alt="Disaster Area" 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                />
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%', background: 'linear-gradient(to top, #0D1B2A, transparent)' }}></div>
-              </div>
-
-              <h3 className="diw-title">{selectedZone.name}</h3>
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                <span 
-                  className="diw-severity-pill"
-                  style={{ 
-                    backgroundColor: `${selectedZone.color}22`,
-                    color: selectedZone.color,
-                    border: `1px solid ${selectedZone.color}55`,
-                    padding: '3px 10px',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    fontWeight: 700
-                  }}
-                >
-                  {selectedZone.severity}
-                </span>
-                {!selectedZone.isIndia && (
-                  <span style={{ background: 'rgba(255,255,255,0.1)', color: '#A0AEC0', fontSize: '10px', padding: '3px 10px', borderRadius: '10px', fontWeight: 600 }}>
-                    🌊 Kerala 2018
-                  </span>
-                )}
-                {selectedZone.isIndia && selectedZone.disasterType && (
-                  <span style={{ background: `${selectedZone.color}18`, color: selectedZone.color, fontSize: '10px', padding: '3px 10px', borderRadius: '10px', fontWeight: 600 }}>
-                    {selectedZone.disasterType}
-                  </span>
-                )}
-              </div>
-
-              <div className="diw-stats" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {selectedZone.isIndia ? (
-                  <>
-                    <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
-                      <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Deaths:</span>
-                      <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.deaths || 0).toLocaleString()}</span>
-                    </div>
-                    <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
-                      <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Affected:</span>
-                      <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.affected || 0).toLocaleString()}</span>
-                    </div>
-                    <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
-                      <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Events (1980+):</span>
-                      <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{selectedZone.count} disasters</span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
-                      <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>{t('totalFatalities')}:</span>
-                      <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{selectedZone.fatalities ?? 0}</span>
-                    </div>
-                    <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
-                      <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>{t('reliefCamps')}:</span>
-                      <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{selectedZone.reliefCamps ?? 0}</span>
-                    </div>
-                    <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
-                      <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>{t('landslides')}:</span>
-                      <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{selectedZone.landslides ?? 0}</span>
-                    </div>
-                  </>
-                )}
-                <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
-                  <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Severity Score:</span>
-                  <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.severityScore || 0).toFixed(1)} / 100</span>
-                </div>
-              </div>
-              <button 
-                className="diw-link" 
-                style={{ 
-                  width: '100%', 
-                  marginTop: '16px', 
-                  padding: '10px', 
-                  background: 'rgba(0, 212, 255, 0.1)', 
-                  border: '1px solid #00D4FF', 
-                  color: '#00D4FF',
-                  borderRadius: '6px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  fontSize: '13px'
+            return (
+              <CircleF
+                key={`weather-${wZone.id}-${idx}`}
+                center={{ lat: wZone.lat, lng: wZone.lng }}
+                radius={mapView === 'india' ? 80000 : 15000}
+                options={{
+                  fillColor: circleColor,
+                  fillOpacity: 0.35,
+                  strokeColor: circleColor,
+                  strokeOpacity: 0.8,
+                  strokeWeight: 1,
+                  clickable: true,
                 }}
-                onClick={() => setSelectedZone(null)}
-              >
-                {t('viewDetails')} →
-              </button>
-            </div>
-          </InfoWindowF>
-        )}
+                onClick={() => setSelectedWeatherZone(wZone)}
+              />
+            );
+          })}
 
-        {/* Weather Info Window */}
-        {selectedWeatherZone && (
-          <InfoWindowF
-            position={{ lat: selectedWeatherZone.lat, lng: selectedWeatherZone.lng }}
-            onCloseClick={() => setSelectedWeatherZone(null)}
-          >
-            <div className="dark-info-window" style={{ minWidth: '220px' }}>
-              <h3 className="diw-title">🌧 {selectedWeatherZone.name} — Live Weather</h3>
-              <div className="diw-stats">
-                <div className="diw-row"><span className="diw-label">Temperature:</span><span className="diw-value">{selectedWeatherZone.weather.temp}°C</span></div>
-                <div className="diw-row"><span className="diw-label">Humidity:</span><span className="diw-value">{selectedWeatherZone.weather.humidity}%</span></div>
-                <div className="diw-row"><span className="diw-label">Rainfall:</span><span className="diw-value">{selectedWeatherZone.weather.rainfall}mm/hr</span></div>
-                <div className="diw-row"><span className="diw-label">Wind:</span><span className="diw-value">{selectedWeatherZone.weather.windSpeed} km/h</span></div>
-                <div className="diw-row"><span className="diw-label">Conditions:</span><span className="diw-value" style={{textTransform:'capitalize'}}>{selectedWeatherZone.weather.description}</span></div>
-              </div>
-              <div style={{color: '#FF1744', fontSize: '11px', marginTop: '8px', fontWeight: '600'}}>
-                ⚠ High flood risk — resources on standby
-              </div>
-              <div style={{color: '#8A9BB3', fontSize: '10px', marginTop: '4px'}}>
-                Last updated: {new Date().toLocaleTimeString()}
-                <br/>
-                Source: {weatherApiError ? 'IMD 2018 Historical' : 'OpenWeatherMap API'}
-              </div>
-            </div>
-          </InfoWindowF>
-        )}
-        {/* Google Maps Routes API Layer */}
-        {allocationRoutes.map((route, i) => (
-          <React.Fragment key={`route-${i}`}>
-            <PolylineF
-              path={window.google.maps.geometry.encoding.decodePath(route.polyline)}
-              options={{
-                strokeColor: '#00D4FF', // Cyan
-                strokeOpacity: 0.8,
-                strokeWeight: 4,
-                geodesic: true
-              }}
-            />
-            {/* Show ETA at the destination */}
+          {/* India Disaster Zone Circles */}
+          {mapView === 'india' && indiaZones && indiaZones.length > 0 && indiaZones
+            .filter(z => activeSeverity === 'All' || z.severity === activeSeverity.toUpperCase())
+            .map((zone) => {
+              if (!zone || !zone.lat || !zone.lng) return null;
+              return (
+                <CircleF
+                  key={`india-${zone.id}`}
+                  center={{ lat: zone.lat, lng: zone.lng }}
+                  radius={zone.severity === 'CRITICAL' ? 120000 : zone.severity === 'HIGH' ? 90000 : 60000}
+                  options={{
+                    fillColor: zone.color,
+                    fillOpacity: 0.2,
+                    strokeColor: zone.color,
+                    strokeOpacity: 0.8,
+                    strokeWeight: 1.5,
+                    clickable: true,
+                  }}
+                  onClick={() => setSelectedZone({ ...zone, isIndia: true })}
+                />
+              );
+            })}
+
+          {mapView === 'india' && indiaZones && indiaZones.length > 0 && indiaZones
+            .filter(z => activeSeverity === 'All' || z.severity === activeSeverity.toUpperCase())
+            .map((zone) => {
+              if (!zone || !zone.lat || !zone.lng) return null;
+              return (
+                <CircleF
+                  key={`india-inner-${zone.id}`}
+                  center={{ lat: zone.lat, lng: zone.lng }}
+                  radius={Math.max(15000, (zone.severityScore / 100) * 55000)}
+                  options={{
+                    fillColor: zone.color,
+                    fillOpacity: 0.55,
+                    strokeColor: zone.color,
+                    strokeOpacity: 1,
+                    strokeWeight: 1,
+                    clickable: true,
+                  }}
+                  onClick={() => setSelectedZone({ ...zone, isIndia: true })}
+                />
+              );
+            })}
+
+          {/* Kerala Zone Markers — sized by severity score */}
+          {filteredZones && filteredZones.length > 0 && filteredZones.map((zone) => {
+            if (!zone || !zone.lat || !zone.lng) return null;
+            
+            const svgMarker = {
+              path: (isLoaded && window.google?.maps?.SymbolPath) ? window.google.maps.SymbolPath.CIRCLE : null,
+              fillColor: zone.color,
+              fillOpacity: 1,
+              strokeWeight: 2,
+              strokeColor: '#FFFFFF',
+              scale: getMarkerScale(zone.severityScore),
+            };
+
+            return (
+              <MarkerF
+                key={zone.id}
+                position={{ lat: Number(zone.lat), lng: Number(zone.lng) }}
+                icon={svgMarker}
+                onClick={() => handleZoneClick(zone)}
+              />
+            );
+          })}
+
+          {/* Hospital markers — small blue cross icons */}
+          {allHospitals && allHospitals.length > 0 && allHospitals.map((h, idx) => {
+            if (!h || !h.lat || !h.lng) return null;
+            return (
+              <MarkerF
+                key={`hosp-${idx}`}
+                position={{ lat: Number(h.lat), lng: Number(h.lng) }}
+                icon={{ url: HOSPITAL_ICON, scaledSize: (isLoaded && window.google?.maps?.Size) ? new window.google.maps.Size(18, 18) : null }}
+                title={`${h.name} — ${h.districtName}`}
+              />
+            );
+          })}
+
+          {/* Info Window — Synchronized with Dashboard */}
+          {selectedZone && (
             <InfoWindowF
-              position={{ lat: route.zone.lat, lng: route.zone.lng }}
-              options={{ disableAutoPan: true }}
+              position={{ lat: selectedZone.lat, lng: selectedZone.lng }}
+              onCloseClick={() => setSelectedZone(null)}
+              options={{ maxWidth: 320 }}
             >
-              <div style={{ background: '#050A14', color: '#00D4FF', padding: '4px 8px', borderRadius: '4px', border: '1px solid #00D4FF', fontWeight: 'bold', fontSize: '12px' }}>
-                ETA: {Math.round(route.durationSeconds / 60)} min
+              <div className="dark-info-window">
+                <div className="diw-image-header" style={{ width: 'calc(100% + 24px)', margin: '-12px -12px 12px -12px', height: '140px', overflow: 'hidden', position: 'relative' }}>
+                  <img 
+                    src={getDisasterImage(selectedZone)} 
+                    alt="Disaster Area" 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  />
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%', background: 'linear-gradient(to top, #0D1B2A, transparent)' }}></div>
+                </div>
+
+                <h3 className="diw-title">{selectedZone.name}</h3>
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                  <span 
+                    className="diw-severity-pill"
+                    style={{ 
+                      backgroundColor: `${selectedZone.color}22`,
+                      color: selectedZone.color,
+                      border: `1px solid ${selectedZone.color}55`,
+                      padding: '3px 10px',
+                      borderRadius: '6px',
+                      fontSize: '11px',
+                      fontWeight: 700
+                    }}
+                  >
+                    {selectedZone.severity}
+                  </span>
+                  {!selectedZone.isIndia && (
+                    <span style={{ background: 'rgba(255,255,255,0.1)', color: '#A0AEC0', fontSize: '10px', padding: '3px 10px', borderRadius: '10px', fontWeight: 600 }}>
+                      🌊 Kerala 2018
+                    </span>
+                  )}
+                  {selectedZone.isIndia && selectedZone.disasterType && (
+                    <span style={{ background: `${selectedZone.color}18`, color: selectedZone.color, fontSize: '10px', padding: '3px 10px', borderRadius: '10px', fontWeight: 600 }}>
+                      {selectedZone.disasterType}
+                    </span>
+                  )}
+                </div>
+
+                <div className="diw-stats" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {selectedZone.isIndia ? (
+                    <>
+                      <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                        <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Deaths:</span>
+                        <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.deaths || 0).toLocaleString()}</span>
+                      </div>
+                      <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                        <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Affected:</span>
+                        <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.affected || 0).toLocaleString()}</span>
+                      </div>
+                      <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                        <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Events (1980+):</span>
+                        <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{selectedZone.count} disasters</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                        <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>{t('totalFatalities')}:</span>
+                        <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{selectedZone.fatalities ?? 0}</span>
+                      </div>
+                      <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                        <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>{t('reliefCamps')}:</span>
+                        <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{selectedZone.reliefCamps ?? 0}</span>
+                      </div>
+                      <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                        <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>{t('landslides')}:</span>
+                        <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{selectedZone.landslides ?? 0}</span>
+                      </div>
+                    </>
+                  )}
+                  <div className="diw-row" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                    <span className="diw-label" style={{ color: '#8A9BB3', fontSize: '12px' }}>Severity Score:</span>
+                    <span className="diw-value" style={{ fontWeight: 700, color: '#fff' }}>{(selectedZone.severityScore || 0).toFixed(1)} / 100</span>
+                  </div>
+                </div>
+                <button 
+                  className="diw-link" 
+                  style={{ 
+                    width: '100%', 
+                    marginTop: '16px', 
+                    padding: '10px', 
+                    background: 'rgba(0, 212, 255, 0.1)', 
+                    border: '1px solid #00D4FF', 
+                    color: '#00D4FF',
+                    borderRadius: '6px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontSize: '13px'
+                  }}
+                  onClick={() => setSelectedZone(null)}
+                >
+                  {t('viewDetails')} →
+                </button>
               </div>
             </InfoWindowF>
-          </React.Fragment>
-        ))}
-      </GoogleMap>
+          )}
+
+          {/* Weather Info Window */}
+          {selectedWeatherZone && (
+            <InfoWindowF
+              position={{ lat: selectedWeatherZone.lat, lng: selectedWeatherZone.lng }}
+              onCloseClick={() => setSelectedWeatherZone(null)}
+            >
+              <div className="dark-info-window" style={{ minWidth: '220px' }}>
+                <h3 className="diw-title">🌧 {selectedWeatherZone.name} — Live Weather</h3>
+                <div className="diw-stats">
+                  <div className="diw-row"><span className="diw-label">Temperature:</span><span className="diw-value">{selectedWeatherZone.weather.temp}°C</span></div>
+                  <div className="diw-row"><span className="diw-label">Humidity:</span><span className="diw-value">{selectedWeatherZone.weather.humidity}%</span></div>
+                  <div className="diw-row"><span className="diw-label">Rainfall:</span><span className="diw-value">{selectedWeatherZone.weather.rainfall}mm/hr</span></div>
+                  <div className="diw-row"><span className="diw-label">Wind:</span><span className="diw-value">{selectedWeatherZone.weather.windSpeed} km/h</span></div>
+                  <div className="diw-row"><span className="diw-label">Conditions:</span><span className="diw-value" style={{textTransform:'capitalize'}}>{selectedWeatherZone.weather.description}</span></div>
+                </div>
+                <div style={{color: '#FF1744', fontSize: '11px', marginTop: '8px', fontWeight: '600'}}>
+                  ⚠ High flood risk — resources on standby
+                </div>
+                <div style={{color: '#8A9BB3', fontSize: '10px', marginTop: '4px'}}>
+                  Last updated: {new Date().toLocaleTimeString()}
+                  <br/>
+                  Source: {weatherApiError ? 'IMD 2018 Historical' : 'OpenWeatherMap API'}
+                </div>
+              </div>
+            </InfoWindowF>
+          )}
+          {/* Google Maps Routes API Layer */}
+          {allocationRoutes && allocationRoutes.length > 0 && allocationRoutes.map((route, i) => (
+            <React.Fragment key={`route-${i}`}>
+              <PolylineF
+                key={route.id}
+                path={window.google?.maps?.geometry?.encoding ? window.google.maps.geometry.encoding.decodePath(route.polyline) : []}
+                options={{
+                  strokeColor: '#00D4FF', // Cyan
+                  strokeOpacity: 0.8,
+                  strokeWeight: 4,
+                  geodesic: true
+                }}
+              />
+              {/* Show ETA at the destination */}
+              <InfoWindowF
+                position={{ lat: route.zone.lat, lng: route.zone.lng }}
+                options={{ disableAutoPan: true }}
+              >
+                <div style={{ background: '#050A14', color: '#00D4FF', padding: '4px 8px', borderRadius: '4px', border: '1px solid #00D4FF', fontWeight: 'bold', fontSize: '12px' }}>
+                  ETA: {Math.round(route.durationSeconds / 60)} min
+                </div>
+              </InfoWindowF>
+            </React.Fragment>
+          ))}
+        </GoogleMap>
+      </ErrorBoundary>
 
       {/* Routes API Branding Banner */}
       {allocationRoutes.length > 0 && (

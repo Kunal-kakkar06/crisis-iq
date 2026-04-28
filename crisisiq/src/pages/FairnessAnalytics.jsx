@@ -10,7 +10,6 @@ import {
 } from 'recharts';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
-import { useAppContext } from '../context/AppContext';
 import './FairnessAnalytics.css';
 const indiaFairnessData = [
   { state: "Assam", region: "RURAL", beforeAllocation: 12, afterAllocation: 82, severityScore: 91, fatalities: 142, affectedPopulation: 850000, bplPercent: 34.4 },
@@ -104,7 +103,7 @@ function CustomTooltip({ active, payload, label }) {
 function FairnessAnalytics() {
   const { isDark } = useTheme();
   const { t } = useLanguage();
-  const { fairnessEnabled, setFairnessEnabled } = useAppContext();
+  const [fairnessEnabled, setFairnessEnabled] = useState(true);
   const [biasScore, setBiasScore] = useState(0.71);
   const [chartData, setChartData] = useState(initialChartData);
   const [particles, setParticles] = useState(false);
