@@ -6,7 +6,7 @@
 
 CrisisIQ is an AI-powered disaster management system that ensures **fast, fair, and explainable allocation of life-saving resources** during emergencies.
 
-Unlike traditional dashboards, CrisisIQ acts as a **decision-making and execution system**, helping authorities respond intelligently in real time.
+Unlike traditional dashboards, CrisisIQ acts as a Decision-making and execution system**, helping authorities respond intelligently in real time.
 
 ---
 
@@ -121,8 +121,8 @@ User Requests → Firebase → Vertex AI → Allocation Engine → Google Maps �
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/smonishkumar/neurostack.git
-cd crisisiq
+```git clone https://github.com/Kunal-kakkar06/crisis-iq.git```
+   cd crisisiq
 ```
 
 ### 2. Install Dependencies
@@ -166,10 +166,10 @@ npm run dev
 
 ## 👥 Team
 
-* **Kunal Kakkar** — Project Lead & Lead Developer
-* **Monish Kumar S** — Backend & System Integration
-* AI Integrations — Yatharth VijayVargiya
-* UI/UX Designer — Shaurya 
+* Kunal Kakkar — Project Lead & Lead Developer
+* Monish Kumar S — Backend & System Integration
+* Yatharth VijayVargiya — AI Integrations
+* Shaurya — UI/UX Designer
 
 ---
 
